@@ -45,6 +45,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bea7f76e-67fc-493a-9ebc-1e5780e8e25f"
+      }
+    },
+    "owner": "raid_dev"
   }
 }
