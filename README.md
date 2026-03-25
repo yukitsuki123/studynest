@@ -9,5 +9,7 @@ Your data lives entirely on your device — no cloud, no accounts, no ads. Expor
 Built with care for academic excellence.
 
 to run it locally on your machine just clone it and run this command
-```npm install```
+```
+npm install
+```
 this project can be collaborated with other devs if you want to add changes or features
