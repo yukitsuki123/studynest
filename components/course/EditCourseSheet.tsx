@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Alert } from 'react-native';
+import { View, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { Course } from '../../constants/types';
@@ -22,11 +23,15 @@ export function EditCourseSheet({ course, visible, onClose, onDelete }: EditCour
   const isNew = !course;
 
   const [name,  setName]  = useState('');
-  const [icon,  setIcon]  = useState('📐');
+  const [icon,  setIcon]  = useState('book');
   const [color, setColor] = useState(FOLDER_COLORS[0]);
 
   useEffect(() => {
-    if (visible) { setName(course?.name ?? ''); setIcon(course?.icon ?? '📐'); setColor(course?.color ?? FOLDER_COLORS[0]); }
+    if (visible) { 
+      setName(course?.name ?? ''); 
+      setIcon(course?.icon ?? 'book'); 
+      setColor(course?.color ?? FOLDER_COLORS[0]); 
+    }
   }, [visible, course]);
 
   const handleSave = () => {
@@ -50,8 +55,8 @@ export function EditCourseSheet({ course, visible, onClose, onDelete }: EditCour
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {FOLDER_ICONS.map((ic) => (
           <TouchableOpacity key={ic} onPress={() => setIcon(ic)}
-            style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 2, borderColor: icon === ic ? t.accent : t.border2, backgroundColor: icon === ic ? t.bg2 : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-            <Txt style={{ fontSize: 22 }}>{ic}</Txt>
+            style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 2, borderColor: icon === ic ? t.accent : t.border2, backgroundColor: icon === ic ? t.accent + '11' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+            <Feather name={ic as any} size={20} color={icon === ic ? t.accent : t.text3} />
           </TouchableOpacity>
         ))}
       </View>

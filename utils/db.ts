@@ -16,6 +16,8 @@ export async function initDB(): Promise<void> {
   const migrations = [
     `ALTER TABLE courses ADD COLUMN archived INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE notes   ADD COLUMN template TEXT NOT NULL DEFAULT 'blank'`,
+    `ALTER TABLE user_profile ADD COLUMN achievements TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE user_profile ADD COLUMN avatar_uri TEXT`,
     `CREATE TABLE IF NOT EXISTS user_profile (
       id TEXT PRIMARY KEY NOT NULL DEFAULT 'me',
       name TEXT NOT NULL DEFAULT 'Student',
@@ -23,7 +25,9 @@ export async function initDB(): Promise<void> {
       university TEXT, major TEXT, year TEXT,
       avatar_emoji TEXT NOT NULL DEFAULT '🎓',
       avatar_bg TEXT NOT NULL DEFAULT '#8B4513',
-      id_card_visible INTEGER NOT NULL DEFAULT 1
+      id_card_visible INTEGER NOT NULL DEFAULT 1,
+      achievements TEXT NOT NULL DEFAULT '[]',
+      avatar_uri TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS bookmarks (
       id TEXT PRIMARY KEY NOT NULL,
@@ -177,11 +181,7 @@ function seedIfEmpty() {
     db.runSync(ST, ['sp8','ss2','Product & quotient rules',   0,2]);
     db.runSync(ST, ['sp9','ss2','Mixed problems quiz',        0,3]);
 
-    const L = 'INSERT INTO links (id,course_id,title,url,added_at) VALUES (?,?,?,?,?)';
-    db.runSync(L, ['l1','c1','Khan Academy — Calculus','https://khanacademy.org/math/calculus',  now-604800000]);
-    db.runSync(L, ['l2','c1',"Paul's Online Math Notes",'https://tutorial.math.lamar.edu',       now-518400000]);
-    db.runSync(L, ['l3','c1','Wolfram Alpha',            'https://wolframalpha.com',              now-432000000]);
-    db.runSync(L, ['l4','c2','HyperPhysics',             'http://hyperphysics.phy-astr.gsu.edu', now-345600000]);
+    // Links removed per user request
 
     const G = 'INSERT INTO grades (id,course_id,label,score,max_score,weight,created_at) VALUES (?,?,?,?,?,?,?)';
     db.runSync(G, ['g1','c1','Midterm Exam', 78,100,0.4,now-1296000000]);
@@ -193,4 +193,35 @@ function seedIfEmpty() {
     db.runSync(E, ['e2','c2','Physics Midterm',       now+864000000, 'Science Block B', 'Open book',      now-86400000]);
     db.runSync(E, ['e3','c3','English Essay Deadline',now+432000000, 'Online Submission','',              now-86400000]);
   });
+}
+
+// Additional table setup for new features — runs safely on both new and existing installs
+export function initNewTables(): void {
+  const extras = [
+    `CREATE TABLE IF NOT EXISTS sticky_notes (
+      id TEXT PRIMARY KEY NOT NULL, content TEXT NOT NULL DEFAULT '',
+      color TEXT NOT NULL DEFAULT '#FFF9C4', created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS daily_intentions (
+      id TEXT PRIMARY KEY NOT NULL, date TEXT NOT NULL UNIQUE,
+      intention TEXT NOT NULL, mood TEXT NOT NULL DEFAULT 'good', created_at INTEGER NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS gratitude_entries (
+      id TEXT PRIMARY KEY NOT NULL, course_id TEXT NOT NULL,
+      content TEXT NOT NULL, created_at INTEGER NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS study_streak (
+      id TEXT PRIMARY KEY NOT NULL DEFAULT 'streak',
+      last_date TEXT NOT NULL DEFAULT '', current_streak INTEGER NOT NULL DEFAULT 0,
+      longest_streak INTEGER NOT NULL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS trash (
+      id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL,
+      data TEXT NOT NULL, deleted_at INTEGER NOT NULL
+    )`,
+    `INSERT OR IGNORE INTO study_streak (id, last_date, current_streak, longest_streak) VALUES ('streak','',0,0)`,
+  ];
+  for (const sql of extras) {
+    try { db.runSync(sql); } catch (_) {}
+  }
 }

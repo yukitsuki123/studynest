@@ -8,12 +8,14 @@ import { EditCourseSheet } from '../../components/course/EditCourseSheet';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Txt } from '../../components/ui/Text';
 import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/SettingsContext';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function CoursesScreen() {
   const t = useTheme();
   const router = useRouter();
   const { state, deleteCourse, archiveCourse } = useApp();
+  const { language } = useSettings();
   const courses = state.courses;
 
   const [query,       setQuery]       = useState('');
@@ -57,7 +59,7 @@ export default function CoursesScreen() {
       <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <View>
-            <Txt variant="display" size={26} style={{ letterSpacing: -0.5 }}>Courses</Txt>
+            <Txt variant="display" size={26} style={{ letterSpacing: -0.5 }}>{language === 'ar' ? 'المواد' : 'Courses'}</Txt>
             <Txt variant="bodyItalic" size={12} color="tertiary" style={{ marginTop: 2 }}>{active.length} active{archived.length > 0 ? ` · ${archived.length} archived` : ''}</Txt>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -110,16 +112,11 @@ export default function CoursesScreen() {
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {active.map(course => (
-            <View key={course.id} style={{ width: '47%', position: 'relative' }}>
-              {selecting && (
-                <View style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, width: 22, height: 22, borderRadius: 11,
-                  backgroundColor: selected.has(course.id) ? t.accent : t.card, borderWidth: 2, borderColor: selected.has(course.id) ? t.accent : t.border,
-                  alignItems: 'center', justifyContent: 'center' }}>
-                  {selected.has(course.id) && <Feather name="check" size={12} color="#fff" />}
-                </View>
-              )}
+            <View key={course.id} style={{ width: '47%' }}>
               <CourseCard course={course}
-                onPress={() => selecting ? toggleSelect(course.id) : router.push(`/course/${course.id}` as any)} />
+                selected={selecting && selected.has(course.id)}
+                onPress={() => selecting ? toggleSelect(course.id) : router.push(`/course/${course.id}` as any)}
+                onLongPress={() => { setSelecting(true); toggleSelect(course.id); }} />
             </View>
           ))}
         </View>

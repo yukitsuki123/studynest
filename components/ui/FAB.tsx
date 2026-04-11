@@ -16,7 +16,7 @@ export function FAB({ onPress, icon = 'plus' }: FABProps) {
       activeOpacity={0.85}
       style={{
         position: 'absolute',
-        bottom: 24,
+        bottom: 36,
         right: 20,
         width: 52,
         height: 52,
