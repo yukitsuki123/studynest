@@ -1,3 +1,4 @@
+import '../utils/crypto-polyfill';
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { db } from '../utils/db';
 import CryptoJS from 'crypto-js';
@@ -10,7 +11,6 @@ import {
   UserProfile, Bookmark, StickyNote, DailyIntention, GratitudeEntry,
   StudyStreak, TrashItem,
 } from '../constants/types';
-import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 
 const LOCAL_KEY = 'studynest_local_v1_secure_key_123';

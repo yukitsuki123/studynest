@@ -9,6 +9,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { FAB } from '../../components/ui/FAB';
 import { Input } from '../../components/ui/Input';
 import { Txt } from '../../components/ui/Text';
+import { DynamicIcon } from '../../components/ui/DynamicIcon';
 import { useApp } from '../../context/AppContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -387,7 +388,7 @@ export default function ScheduleScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
                 borderWidth: 1.5, borderColor: newCourseId === c.id ? c.color : t.border2,
                 backgroundColor: newCourseId === c.id ? c.color + '22' : t.bg2 }}>
-              <Txt size={14}>{c.icon}</Txt>
+              <DynamicIcon name={c.icon} size={14} color={newCourseId === c.id ? c.color : t.text3} />
               <Txt variant="body" size={13} style={{ color: newCourseId === c.id ? c.color : t.text2 }}>{c.name}</Txt>
             </TouchableOpacity>
           ))}

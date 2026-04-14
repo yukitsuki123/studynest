@@ -279,12 +279,20 @@ export default function SettingsMain() {
           <SectionTitle label={t('support')} />
           <View style={{ borderRadius:20,overflow:'hidden',borderWidth:1,borderColor:tColor.border2 }}>
             <MenuRow 
+              icon={FileText} 
+              iconBg="#FFFBEB" // Light Gold
+              iconColor="#D97706"
+              label="Changelog"
+              description="See what's new in v1.1.0"
+              onPress={() => router.push('/settings/changelog' as any)} 
+            />
+            <MenuRow 
               icon={AlertCircle} 
               iconBg="#F3F4F6" // Light Gray
               iconColor="#4B5563"
               label={t('about')} 
               description={t('about_desc')}
-              value="v1.0.0"
+              value="v1.1.0"
               onPress={() => router.push('/settings/about' as any)} 
               last 
             />
@@ -292,7 +300,7 @@ export default function SettingsMain() {
 
           {/* Footer watermark footer to reduce visual clutter */}
           <View style={{ marginTop:48, marginBottom: 20, alignItems:'center' }}>
-            <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase',letterSpacing:4 }}>STUDYNEST · V1</Txt>
+            <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase',letterSpacing:4 }}>STUDYNEST · V1.1</Txt>
           </View>
 
         </View>

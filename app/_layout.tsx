@@ -1,3 +1,4 @@
+import '../utils/crypto-polyfill';
 import '../global.css';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';

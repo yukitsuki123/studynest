@@ -49,6 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen name="settings/files" options={{ href: null }} />
       <Tabs.Screen name="settings/language" options={{ href: null }} />
       <Tabs.Screen name="settings/data" options={{ href: null }} />
+      <Tabs.Screen name="settings/changelog" options={{ href: null }} />
       <Tabs.Screen name="settings/about" options={{ href: null }} />
     </Tabs>
   );

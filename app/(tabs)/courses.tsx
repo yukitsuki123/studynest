@@ -9,6 +9,7 @@ import { CourseCard } from '../../components/course/CourseCard';
 import { EditCourseSheet } from '../../components/course/EditCourseSheet';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Txt } from '../../components/ui/Text';
+import { DynamicIcon } from '../../components/ui/DynamicIcon';
 import { useApp } from '../../context/AppContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -142,7 +143,9 @@ export default function CoursesScreen() {
                         { text: 'Cancel',   style: 'cancel' },
                       ])}
                       style={{ backgroundColor: t.card, borderRadius: 14, borderWidth: 1, borderColor: t.border2, borderTopWidth: 3, borderTopColor: course.color + '88', padding: 14, opacity: 0.6 }}>
-                      <Txt style={{ fontSize: 22, marginBottom: 6 }}>{course.icon}</Txt>
+                      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: course.color + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                        <DynamicIcon name={course.icon} size={20} color={course.color} />
+                      </View>
                       <Txt variant="bodySemi" size={13} style={{ color: t.text3 }}>{course.name}</Txt>
                       <Txt variant="mono" size={9} color="tertiary" style={{ marginTop: 4 }}>Archived</Txt>
                     </TouchableOpacity>

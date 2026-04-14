@@ -36,7 +36,7 @@ export type TranslationKey =
   | 'active' | 'inactive' | 'set_as_active' | 'success' | 'active_profile_set'
   | 'themes' | 'layouts' | 'storage_data_backups' | 'storage_data_desc'
   | 'trash_backups' | 'files_language'
-  | 'archive' | 'archive_desc' | 'app_language_desc' | 'trash_desc' | 'file_viewer_desc';
+    | 'archive' | 'archive_desc' | 'app_language_desc' | 'trash_desc' | 'file_viewer_desc' | 'profile_managed_via_id';
 
 export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> = {
   en: {
@@ -124,7 +124,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     encryption: 'Database Encryption',
     encryption_desc: 'Coming in Phase 8 (Pro feature)',
     about_studynest: 'About StudyNest',
-    version_info: 'Version 1.0.0 (Academic Edition)',
+    version_info: 'Version 1.1.0 (Academic Edition)',
     about_para1: 'StudyNest is a private academic organizer built for students who take their studies seriously.',
     about_para2: 'Organize your courses into smart folders. Each course holds your files, lecture notes, to-do lists, study sets, resource links, and grades — all in one place.',
     about_para3: 'Write notes with markdown support, track deadlines on a built-in calendar, prep for exams with flashcard quiz mode, and stay focused with the Pomodoro timer.',
@@ -139,6 +139,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     day_streak: 'Day Streak',
     edit_basic_info: 'Edit Basic Info',
     achievements: 'Achievements',
+    profile_managed_via_id: 'Your profile information is managed through your Student ID cards.',
     no_email_set: 'No email set',
     export_backup: 'Export Backup',
     restore_backup: 'Restore Backup',
@@ -306,7 +307,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     exams: 'Exams',
     active: 'Active',
     inactive: 'Inactive',
-    set_as_active: 'Set as Active Profile',
+    set_as_active: 'Set as Active',
     success: 'Success',
     active_profile_set: 'This card is now your active profile.',
     themes: 'Themes',
@@ -405,7 +406,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     encryption: 'تشفير قاعدة البيانات',
     encryption_desc: 'قادم في المرحلة الثامنة (ميزة للمحترفين)',
     about_studynest: 'حول ستادي نست',
-    version_info: 'الإصدار 1.0.0 (النسخة الدراسية)',
+    version_info: 'الإصدار 1.1.0 (النسخة الأكاديمية)',
     about_para1: 'ستادي نست هو منظم أكاديمي خاص تم بناؤه للطلاب الذين يهتمون بدراستهم بجدية.',
     about_para2: 'نظم موادك في مجلدات ذكية. كل مادة تحتوي على ملفاتك، ملاحظات المحاضرات، قوائم المهام، مجموعات الدراسة، روابط المصادر والدرجات - كل ذلك في مكان واحد.',
     about_para3: 'اكتب ملاحظاتك مع دعم markdown، تتبع المواعيد النهائية على تقويم مدمج، استعد للامتحانات مع وضع الاختبار بالبطاقات التعليمية، وحافظ على تركيزك مع مؤقت بومودورو.',
@@ -420,6 +421,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     day_streak: 'سلسلة الأيام',
     edit_basic_info: 'تعديل البيانات الأساسية',
     achievements: 'الإنجازات',
+    profile_managed_via_id: 'تتم إدارة معلومات ملفك الشخصي من خلال بطاقات هوية الطالب الخاصة بك.',
     no_email_set: 'لم يتم ضبط بريد',
     export_backup: 'تصدير نسخة احتياطية',
     restore_backup: 'استعادة نسخة احتياطية',
@@ -587,7 +589,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     exams: 'الامتحانات',
     active: 'نشط',
     inactive: 'غير نشط',
-    set_as_active: 'تعيين كملف نشط',
+    set_as_active: 'تعيين كنشط',
     success: 'تم بنجاح',
     active_profile_set: 'تم تعيين هذه البطاقة كملف تعريف نشط حالياً.',
     themes: 'السمات والتنسيق',
