@@ -4,7 +4,7 @@ import {
   Animated, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { X, Share } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
@@ -113,7 +113,7 @@ export default function ImageViewerScreen() {
         }}>
           <TouchableOpacity onPress={() => router.back()}
             style={{ width:36, height:36, borderRadius:18, backgroundColor:'rgba(255,255,255,0.15)', alignItems:'center', justifyContent:'center' }}>
-            <Feather name="x" size={20} color="#fff" />
+            <X size={20} color="#fff" />
           </TouchableOpacity>
 
           <View style={{ flex:1, minWidth:0 }}>
@@ -130,7 +130,7 @@ export default function ImageViewerScreen() {
           <TouchableOpacity
             onPress={() => currentFile && openFileExternal(currentFile.uri, 'image')}
             style={{ width:36, height:36, borderRadius:18, backgroundColor:'rgba(255,255,255,0.15)', alignItems:'center', justifyContent:'center' }}>
-            <Feather name="share" size={17} color="#fff" />
+            <Share size={17} color="#fff" />
           </TouchableOpacity>
         </View>
       </Animated.View>

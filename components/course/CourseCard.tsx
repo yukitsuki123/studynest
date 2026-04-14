@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Book, Check, MoreVertical, Folder } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { Course } from '../../constants/types';
 import { Txt } from '../ui/Text';
 import { ProgressBar } from '../ui/ProgressBar';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 interface CourseCardProps {
   course: Course;
@@ -23,7 +24,8 @@ export function CourseCard({ course, onPress, onLongPress, selected }: CourseCar
   const progress = todos.length ? done / todos.length : 0;
   
   // Icon name is now stored directly in the course object
-  const featherIcon = (course.icon as any) || 'folder';
+  // Dynamic icon rendering
+  const IconComponent = Book; // Fallback for now, could be mapped later
 
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress} activeOpacity={0.85}
@@ -33,15 +35,15 @@ export function CourseCard({ course, onPress, onLongPress, selected }: CourseCar
         shadowOpacity:0.05, shadowRadius:6, elevation:1 }}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
         <View style={{ width:38, height:38, borderRadius:10, backgroundColor:course.color+'22', alignItems:'center', justifyContent:'center' }}>
-          <Feather name={featherIcon} size={18} color={course.color} />
+          <DynamicIcon name={course.icon} size={18} color={course.color} />
         </View>
         {selected ? (
           <View style={{ width:22, height:22, borderRadius:11, backgroundColor:t.accent, alignItems:'center', justifyContent:'center' }}>
-            <Feather name="check" size={12} color="#fff" />
+            <Check size={12} color="#fff" />
           </View>
         ) : (
           <TouchableOpacity onPress={onLongPress} style={{ padding: 4, marginRight:-8 }}>
-            <Feather name="more-vertical" size={16} color={t.text3} />
+            <MoreVertical size={16} color={t.text3} />
           </TouchableOpacity>
         )}
       </View>

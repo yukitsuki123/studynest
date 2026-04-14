@@ -1,7 +1,10 @@
-import { Feather } from '@expo/vector-icons';
+import { 
+  Search, BarChart2, Clock, Zap, Sun, Edit2, FileText, ChevronRight, 
+  Plus, Folder, Calendar, HardDrive, CreditCard, Book, File, CheckSquare 
+} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, ScrollView, TextInput, TouchableOpacity, View, Image as RNImage } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DeadlineCard } from '../../components/schedule/DeadlineCard';
 import { BottomSheet } from '../../components/ui/BottomSheet';
@@ -70,10 +73,11 @@ function PaperTexture({ color }: { color:string }) {
 
 export default function HomeScreen() {
   const tColor = useTheme();
-  const { language, isRTL, homeSections, t } = useSettings();
+  const { language, isRTL, homeSections, t, activeProfileId } = useSettings();
   const router  = useRouter();
   const { state, setDailyIntention, addStickyNote, updateStickyNote, deleteStickyNote, deleteFromTrash } = useApp();
-  const { courses, todos, exams, pomodoroSessions, profile, stickyNotes, dailyIntentions, streak } = state;
+  const { courses, todos, exams, pomodoroSessions, stickyNotes, dailyIntentions, streak, profiles } = state;
+  const profile = useMemo(() => profiles.find(p => p.id === activeProfileId) || (profiles.length > 0 ? profiles[0] : null), [profiles, activeProfileId]);
 
   const quote      = getDailyQuote();
   const timeOfDay  = getTimeOfDay();
@@ -181,8 +185,12 @@ export default function HomeScreen() {
           <View style={{ paddingHorizontal:20, paddingTop:16, paddingBottom:12 }}>
             <View style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:12 }}>
               <TouchableOpacity onPress={() => router.push('/idcard' as any)}
-                style={{ width:44, height:44, borderRadius:22, backgroundColor:profile?.avatarBg??tColor.accent, alignItems:'center', justifyContent:'center', borderWidth:2, borderColor:timeCfg.accent+'44' }}>
-                <Txt style={{ fontSize:22 }}>{profile?.avatarEmoji??'🎓'}</Txt>
+                style={{ width:44, height:44, borderRadius:22, backgroundColor:profile?.avatarBg??tColor.accent, alignItems:'center', justifyContent:'center', borderWidth:2, borderColor:timeCfg.accent+'44', overflow: 'hidden' }}>
+                {profile?.avatarUri ? (
+                  <RNImage source={{ uri: profile.avatarUri }} style={{ width: 44, height: 44 }} />
+                ) : (
+                  <Txt style={{ fontSize:22 }}>{profile?.avatarEmoji??'🎓'}</Txt>
+                )}
               </TouchableOpacity>
               <View style={{ flex:1 }}>
                 <Txt variant="display" size={20} style={{ lineHeight:26, textAlign:isRTL?'right':'left' }}>
@@ -192,23 +200,23 @@ export default function HomeScreen() {
               </View>
               <View style={{ flexDirection:'row', gap:6 }}>
                 <TouchableOpacity onPress={() => router.push('/search' as any)} style={{ width:34, height:34, borderRadius:9, backgroundColor:tColor.card, borderWidth:1, borderColor:tColor.border, alignItems:'center', justifyContent:'center' }}>
-                  <Feather name="search" size={15} color={tColor.text2} />
+                  <Search size={15} color={tColor.text2} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/report' as any)} style={{ width:34, height:34, borderRadius:9, backgroundColor:tColor.card, borderWidth:1, borderColor:tColor.border, alignItems:'center', justifyContent:'center' }}>
-                  <Feather name="bar-chart-2" size={15} color={tColor.text2} />
+                  <BarChart2 size={15} color={tColor.text2} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/pomodoro' as any)} style={{ width:34, height:34, borderRadius:9, backgroundColor:tColor.accent, alignItems:'center', justifyContent:'center' }}>
-                  <Feather name="clock" size={15} color="#fff" />
+                  <Clock size={15} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Streak badge */}
             {homeSections.streak && streak.currentStreak > 0 && (
-              <View style={{ flexDirection:'row', alignItems:'center', gap:6, marginTop:10, alignSelf:'flex-start', backgroundColor:tColor.accent2+'22', paddingHorizontal:12, paddingVertical:6, borderRadius:20, borderWidth:1, borderColor:tColor.accent2+'44' }}>
-                <Feather name="zap" size={12} color={tColor.accent2} />
-                <Txt variant="mono" size={11} style={{ color:tColor.accent2 }}>{streak.currentStreak} day streak</Txt>
-                {streak.longestStreak > 0 && <Txt variant="mono" size={9} color="tertiary">· best {streak.longestStreak}</Txt>}
+              <View style={{ flexDirection:'row', alignItems:'center', gap:6, marginTop:10, alignSelf:'flex-start', backgroundColor:tColor.accent2, paddingHorizontal:12, paddingVertical:6, borderRadius:20, shadowColor: tColor.accent2, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 3 }}>
+                <Zap size={12} color={tColor.getContrastColor(tColor.accent2)} />
+                <Txt variant="mono" size={11} style={{ color: tColor.getContrastColor(tColor.accent2) }}>{streak.currentStreak} day streak</Txt>
+                {streak.longestStreak > 0 && <Txt variant="mono" size={9} style={{ color: tColor.getContrastColor(tColor.accent2) + 'aa' }}>· best {streak.longestStreak}</Txt>}
               </View>
             )}
           </View>
@@ -224,12 +232,12 @@ export default function HomeScreen() {
                 <Txt variant="mono" size={9} style={{ color:timeCfg.accent, textTransform:'uppercase', letterSpacing:0.8, marginBottom:3, textAlign:isRTL?'right':'left' }}>{t('todays_intention')}</Txt>
                 <Txt variant="displayItalic" size={13} style={{ color:tColor.text2, lineHeight:20, textAlign:isRTL?'right':'left' }}>"{todayIntention.intention}"</Txt>
               </View>
-              <Feather name="edit-2" size={12} color={tColor.text3} />
+              <Edit2 size={12} color={tColor.text3} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={() => setShowIntention(true)}
               style={{ marginHorizontal:20, marginBottom:14, borderWidth:1, borderColor:timeCfg.accent+'44', borderRadius:12, borderStyle:'dashed', padding:14, flexDirection:'row', gap:10, alignItems:'center' }}>
-              <Feather name="sun" size={16} color={timeCfg.accent} />
+              <Sun size={16} color={timeCfg.accent} />
               <Txt variant="bodyItalic" size={13} style={{ color:timeCfg.accent }}>Set today's intention…</Txt>
             </TouchableOpacity>
           )
@@ -257,14 +265,14 @@ export default function HomeScreen() {
           <TouchableOpacity onPress={() => router.push('/(tabs)/schedule')}
             style={{ marginHorizontal:20, marginBottom:14, padding:14, backgroundColor:tColor.red+'12', borderRadius:12, borderWidth:1, borderColor:tColor.red+'44', flexDirection:'row', alignItems:'center', gap:12 }}>
             <View style={{ width:38, height:38, borderRadius:10, backgroundColor:tColor.red+'22', alignItems:'center', justifyContent:'center' }}>
-              <Feather name="file-text" size={18} color={tColor.red} />
+              <FileText size={18} color={tColor.red} />
             </View>
             <View style={{ flex:1 }}>
               <Txt variant="mono" size={9} style={{ color:tColor.red, textTransform:'uppercase', letterSpacing:0.8, marginBottom:2 }}>Next Exam</Txt>
               <Txt variant="bodySemi" size={14}>{nextExam.title}</Txt>
               <Txt variant="mono" size={10} style={{ color:tColor.red, marginTop:2 }}>{new Date(nextExam.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})} · {daysUntil(nextExam.date)}d</Txt>
             </View>
-            <Feather name="chevron-right" size={16} color={tColor.red} />
+            <ChevronRight size={16} color={tColor.red} />
           </TouchableOpacity>
         )}
 
@@ -282,7 +290,7 @@ export default function HomeScreen() {
             <View style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal:20, marginBottom:10 }}>
               <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase', letterSpacing:1.2, textAlign:isRTL?'right':'left' }}>— {t('quick_notes')}</Txt>
               <TouchableOpacity onPress={openNewSticky} style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:4 }}>
-                <Feather name="plus" size={12} color={tColor.accent} />
+                <Plus size={12} color={tColor.accent} />
                 <Txt variant="mono" size={10} color="accent">{language==='ar'?'إضافة':'Add'}</Txt>
               </TouchableOpacity>
             </View>
@@ -296,7 +304,7 @@ export default function HomeScreen() {
               {stickyNotes.length === 0 && (
                 <TouchableOpacity onPress={openNewSticky}
                   style={{ width:140, height:120, backgroundColor:STICKY_COLORS[0], borderRadius:12, padding:14, borderWidth:1.5, borderColor:'#E0E0E0', borderStyle:'dashed', alignItems:'center', justifyContent:'center', gap:8 }}>
-                  <Feather name="plus" size={22} color="#888" />
+                  <Plus size={22} color="#888" />
                   <Txt style={{ fontSize:11, color:'#888', textAlign:'center' }}>Add a quick note</Txt>
                 </TouchableOpacity>
               )}
@@ -320,7 +328,13 @@ export default function HomeScreen() {
               ].map(a=>(
                 <TouchableOpacity key={a.label} onPress={a.onPress}
                   style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:8, paddingHorizontal:14, paddingVertical:10, borderRadius:20, backgroundColor:a.color+'22', borderWidth:1, borderColor:a.color+'44' }}>
-                  <Feather name={a.icon as any} size={13} color={a.color} />
+                  {a.icon === 'folder' && <Folder size={13} color={a.color} />}
+                  {a.icon === 'clock' && <Clock size={13} color={a.color} />}
+                  {a.icon === 'calendar' && <Calendar size={13} color={a.color} />}
+                  {a.icon === 'search' && <Search size={13} color={a.color} />}
+                  {a.icon === 'bar-chart-2' && <BarChart2 size={13} color={a.color} />}
+                  {a.icon === 'credit-card' && <CreditCard size={13} color={a.color} />}
+                  {a.icon === 'hard-drive' && <HardDrive size={13} color={a.color} />}
                   <Txt variant="mono" size={11} style={{ color:a.color }}>{a.label}</Txt>
                 </TouchableOpacity>
               ))}
@@ -341,7 +355,7 @@ export default function HomeScreen() {
                 return (
                   <TouchableOpacity key={course.id} onPress={()=>router.push(`/course/${course.id}` as any)} activeOpacity={0.8}
                     style={{ width:140, backgroundColor:tColor.card, borderRadius:14, borderWidth:1, borderColor:tColor.border2, borderTopWidth:3, borderTopColor:course.color, padding:14, gap:6 }}>
-                    <Feather name="book" size={20} color={course.color} />
+                    <Book size={20} color={course.color} />
                     <Txt variant="bodySemi" size={13} numberOfLines={1}>{course.name}</Txt>
                     <View style={{ height:4, backgroundColor:tColor.bg3, borderRadius:2, overflow:'hidden' }}>
                       <View style={{ height:4, width:`${Math.round(pct*100)}%`, backgroundColor:course.color, borderRadius:2 }} />
@@ -368,7 +382,7 @@ export default function HomeScreen() {
                 <TouchableOpacity key={item.id} onPress={()=>router.push(`/course/${item.courseId}` as any)} activeOpacity={0.8}
                   style={{ flexDirection:'row', alignItems:'center', gap:12, backgroundColor:tColor.card, borderWidth:1, borderColor:tColor.border2, borderRadius:12, padding:14, marginHorizontal:20, marginBottom:8 }}>
                   <View style={{ width:36, height:36, borderRadius:9, backgroundColor:course?course.color+'22':tColor.bg2, alignItems:'center', justifyContent:'center' }}>
-                    <Feather name="file" size={16} color={course?.color??tColor.text3} />
+                    <File size={16} color={course?.color??tColor.text3} />
                   </View>
                   <View style={{ flex:1, minWidth:0 }}>
                     <Txt variant="bodySemi" size={13} numberOfLines={1}>{item.name}</Txt>
@@ -463,7 +477,9 @@ export default function HomeScreen() {
             {icon:'zap',          label:'Study streak', value:`${streak.currentStreak} days`, color:tColor.accent2},
           ].map(s=>(
             <View key={s.label} style={{ flexDirection:'row', alignItems:'center', gap:12, backgroundColor:tColor.bg2, borderRadius:10, padding:14 }}>
-              <Feather name={s.icon as any} size={18} color={s.color} />
+              {s.icon === 'check-square' && <CheckSquare size={18} color={s.color} />}
+              {s.icon === 'clock' && <Clock size={18} color={s.color} />}
+              {s.icon === 'zap' && <Zap size={18} color={s.color} />}
               <Txt variant="body" size={13} style={{ flex:1 }}>{s.label}</Txt>
               <Txt variant="display" size={16} style={{ color:s.color }}>{s.value}</Txt>
             </View>

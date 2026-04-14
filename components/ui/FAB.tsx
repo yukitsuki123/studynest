@@ -1,14 +1,14 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Plus } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 
 interface FABProps {
   onPress: () => void;
-  icon?: keyof typeof Feather.glyphMap;
+  icon?: React.ElementType;
 }
 
-export function FAB({ onPress, icon = 'plus' }: FABProps) {
+export function FAB({ onPress, icon = Plus }: FABProps) {
   const t = useTheme();
   return (
     <TouchableOpacity
@@ -31,7 +31,7 @@ export function FAB({ onPress, icon = 'plus' }: FABProps) {
         elevation: 6,
       }}
     >
-      <Feather name={icon} size={22} color="#fff" />
+      {React.createElement(icon, { size: 22, color: '#fff' })}
     </TouchableOpacity>
   );
 }

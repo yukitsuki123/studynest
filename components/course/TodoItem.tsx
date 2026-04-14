@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Check, Calendar, Edit2 } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { TodoItem as TodoItemType } from '../../constants/types';
@@ -27,7 +27,7 @@ export function TodoItem({ todo, onPress, onLongPress }: TodoItemProps) {
       <TouchableOpacity onPress={() => toggleTodo(todo.id)}
         style={{ width:22,height:22,borderRadius:6,borderWidth:2,borderColor:todo.done?t.accent:t.border,
           backgroundColor:todo.done?t.accent:'transparent',alignItems:'center',justifyContent:'center',marginTop:1 }}>
-        {todo.done && <Feather name="check" size={12} color="#fff" />}
+        {todo.done && <Check size={12} color="#fff" />}
       </TouchableOpacity>
       <View style={{ flex:1 }}>
         <Txt variant={todo.done?'bodyItalic':'body'} size={14}
@@ -36,13 +36,13 @@ export function TodoItem({ todo, onPress, onLongPress }: TodoItemProps) {
         </Txt>
         {todo.deadline && (
           <Txt variant="mono" size={10} style={{ marginTop:3,color:overdue?t.red:urgent?t.accent2:t.text3 }}>
-            📅 {formatDeadline(todo.deadline)}{overdue?' · Overdue':urgent?` · ${daysUntil(todo.deadline)}d left`:''}
+            <Calendar size={10} color={t.text3} /> <Txt variant="mono" size={10} style={{ color:overdue?t.red:urgent?t.accent2:t.text3 }}>{formatDeadline(todo.deadline)}{overdue?' • Overdue':urgent?` • ${daysUntil(todo.deadline)}d left`:''}</Txt>
           </Txt>
         )}
       </View>
       <View style={{ flexDirection:'row',alignItems:'center',gap:6 }}>
         <View style={{ width:6,height:6,borderRadius:3,backgroundColor:PRIORITY_COLORS[todo.priority],marginTop:6 }} />
-        {onPress && <Feather name="edit-2" size={12} color={t.text3} style={{ marginTop:4 }} />}
+        {onPress && <Edit2 size={12} color={t.text3} style={{ marginTop:4 }} />}
       </View>
     </TouchableOpacity>
   );

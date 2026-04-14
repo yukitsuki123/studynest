@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight, ExternalLink, Info, Globe } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
@@ -13,8 +13,8 @@ function Header({ title }: { title: string }) {
   const router = useRouter();
   return (
     <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',paddingHorizontal:16,paddingVertical:12 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
-        <Feather name={isRTL?"arrow-right":"arrow-left"} size={20} color={tColor.text} />
+      <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
+        {isRTL ? <ArrowRight size={20} color={tColor.text} /> : <ArrowLeft size={20} color={tColor.text} />}
       </TouchableOpacity>
       <Txt variant="display" size={20} style={{ marginLeft:isRTL?0:16, marginRight:isRTL?16:0 }}>{title}</Txt>
     </View>
@@ -61,9 +61,9 @@ export default function AboutSettings() {
         </View>
 
         <View style={{ marginTop:32, flexDirection:isRTL?'row-reverse':'row', justifyContent:'center', gap:24 }}>
-          <TouchableOpacity><Feather name="github" size={20} color={tColor.text3} /></TouchableOpacity>
-          <TouchableOpacity><Feather name="twitter" size={20} color={tColor.text3} /></TouchableOpacity>
-          <TouchableOpacity><Feather name="globe" size={20} color={tColor.text3} /></TouchableOpacity>
+          <TouchableOpacity><Globe size={20} color={tColor.text3} /></TouchableOpacity>
+          <TouchableOpacity><ExternalLink size={20} color={tColor.text3} /></TouchableOpacity>
+          <TouchableOpacity><Info size={20} color={tColor.text3} /></TouchableOpacity>
         </View>
 
       </ScrollView>

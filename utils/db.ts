@@ -18,6 +18,9 @@ export async function initDB(): Promise<void> {
     `ALTER TABLE notes   ADD COLUMN template TEXT NOT NULL DEFAULT 'blank'`,
     `ALTER TABLE user_profile ADD COLUMN achievements TEXT NOT NULL DEFAULT '[]'`,
     `ALTER TABLE user_profile ADD COLUMN avatar_uri TEXT`,
+    `ALTER TABLE user_profile ADD COLUMN student_id TEXT`,
+    `ALTER TABLE user_profile ADD COLUMN phone TEXT`,
+    `ALTER TABLE user_profile ADD COLUMN birth_date TEXT`,
     `CREATE TABLE IF NOT EXISTS user_profile (
       id TEXT PRIMARY KEY NOT NULL DEFAULT 'me',
       name TEXT NOT NULL DEFAULT 'Student',
@@ -27,7 +30,10 @@ export async function initDB(): Promise<void> {
       avatar_bg TEXT NOT NULL DEFAULT '#8B4513',
       id_card_visible INTEGER NOT NULL DEFAULT 1,
       achievements TEXT NOT NULL DEFAULT '[]',
-      avatar_uri TEXT
+      avatar_uri TEXT,
+      student_id TEXT,
+      phone TEXT,
+      birth_date TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS bookmarks (
       id TEXT PRIMARY KEY NOT NULL,

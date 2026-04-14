@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Book } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { Course } from '../../constants/types';
@@ -9,6 +9,7 @@ import { BottomSheet } from '../ui/BottomSheet';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Txt } from '../ui/Text';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 interface EditCourseSheetProps {
   course?: Course | null;
@@ -56,7 +57,7 @@ export function EditCourseSheet({ course, visible, onClose, onDelete }: EditCour
         {FOLDER_ICONS.map((ic) => (
           <TouchableOpacity key={ic} onPress={() => setIcon(ic)}
             style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 2, borderColor: icon === ic ? t.accent : t.border2, backgroundColor: icon === ic ? t.accent + '11' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-            <Feather name={ic as any} size={20} color={icon === ic ? t.accent : t.text3} />
+            <DynamicIcon name={ic} size={20} color={icon === ic ? t.accent : t.text3} />
           </TouchableOpacity>
         ))}
       </View>

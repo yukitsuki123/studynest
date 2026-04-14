@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { X as XIcon, CheckCircle, Check, ChevronLeft, ChevronRight, Trash2, Zap } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, TouchableOpacity, View, Animated } from 'react-native';
@@ -59,7 +59,7 @@ export default function StudySetScreen() {
       <SafeAreaView style={{ flex:1,backgroundColor:tColor.bg }} edges={['top']}>
         <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, paddingHorizontal:20, paddingVertical:14, borderBottomWidth:1, borderBottomColor:tColor.border }}>
           <TouchableOpacity onPress={() => setMode('overview')} style={{ width:34,height:34,borderRadius:9,backgroundColor:tColor.card,borderWidth:1,borderColor:tColor.border,alignItems:'center',justifyContent:'center' }}>
-            <Feather name="x" size={18} color={tColor.text2} />
+            <XIcon size={18} color={tColor.text2} />
           </TouchableOpacity>
           <Txt variant="display" size={17} style={{ flex:1, textAlign: isRTL?'right':'left' }}>{t('quiz')} — {set.title}</Txt>
           <Txt variant="mono" size={11} color="tertiary">{quizIndex+1}/{quizSteps.length}</Txt>
@@ -95,7 +95,7 @@ export default function StudySetScreen() {
                   <Txt variant="display" size={20} style={{ textAlign:'center',lineHeight:28 }}>{current.label}</Txt>
                   {current.done && (
                     <View style={{ marginTop:16,flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:6 }}>
-                      <Feather name="check-circle" size={14} color={tColor.accent3} />
+                      <CheckCircle size={14} color={tColor.accent3} />
                       <Txt variant="mono" size={11} style={{ color:tColor.accent3 }}>{t('marked_complete')}</Txt>
                     </View>
                   )}
@@ -114,12 +114,12 @@ export default function StudySetScreen() {
               <View style={{ flexDirection: isRTL?'row-reverse':'row', gap:12 }}>
                 <TouchableOpacity onPress={markSkip}
                   style={{ flex:1,paddingVertical:14,borderRadius:12,borderWidth:1.5,borderColor:tColor.red+'66',backgroundColor:tColor.red+'11',alignItems:'center',flexDirection: isRTL?'row-reverse':'row',justifyContent:'center',gap:8 }}>
-                  <Feather name="x" size={16} color={tColor.red} />
+                  <XIcon size={16} color={tColor.red} />
                   <Txt variant="bodySemi" size={14} style={{ color:tColor.red }}>{t('skip')}</Txt>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={markKnow}
                   style={{ flex:1,paddingVertical:14,borderRadius:12,borderWidth:1.5,borderColor:tColor.accent3+'66',backgroundColor:tColor.accent3+'11',alignItems:'center',flexDirection: isRTL?'row-reverse':'row',justifyContent:'center',gap:8 }}>
-                  <Feather name="check" size={16} color={tColor.accent3} />
+                  <Check size={16} color={tColor.accent3} />
                   <Txt variant="bodySemi" size={14} style={{ color:tColor.accent3 }}>{t('got_it')}</Txt>
                 </TouchableOpacity>
               </View>
@@ -135,11 +135,11 @@ export default function StudySetScreen() {
     <SafeAreaView style={{ flex:1,backgroundColor:tColor.bg }} edges={['top']}>
       <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, paddingHorizontal:20, paddingVertical:14, borderBottomWidth:1, borderBottomColor:tColor.border }}>
         <TouchableOpacity onPress={() => router.back()} style={{ width:34,height:34,borderRadius:9,backgroundColor:tColor.card,borderWidth:1,borderColor:tColor.border,alignItems:'center',justifyContent:'center' }}>
-          <Feather name={isRTL?"chevron-right":"chevron-left"} size={18} color={tColor.text2} />
+          {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <ChevronLeft size={18} color={tColor.text2} />}
         </TouchableOpacity>
         <Txt variant="display" size={18} style={{ flex:1, textAlign: isRTL?'right':'left' }}>{set.title}</Txt>
         <TouchableOpacity onPress={() => Alert.alert(t('trash_management'), `${t('permanent_delete')} "${set.title}"?`, [{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>{deleteStudySet(setId!);router.back();}}])}>
-          <Feather name="trash-2" size={16} color={tColor.text3} />
+          <Trash2 size={16} color={tColor.text3} />
         </TouchableOpacity>
       </View>
 
@@ -163,13 +163,13 @@ export default function StudySetScreen() {
         <TouchableOpacity onPress={() => { restartQuiz(); setMode('quiz'); }}
           style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, backgroundColor:tColor.accent+'22', borderWidth:1.5, borderColor:tColor.accent+'44', borderRadius:12, padding:16, marginBottom:20 }}>
           <View style={{ width:40,height:40,borderRadius:10,backgroundColor:tColor.accent,alignItems:'center',justifyContent:'center' }}>
-            <Feather name="zap" size={18} color="#fff" />
+            <Zap size={18} color="#fff" />
           </View>
           <View style={{ flex:1 }}>
             <Txt variant="bodySemi" size={15} color="accent" style={{ textAlign: isRTL?'right':'left' }}>{t('start_quiz_mode')}</Txt>
             <Txt variant="bodyItalic" size={12} color="tertiary" style={{ textAlign: isRTL?'right':'left' }}>{t('test_yourself_hint')}</Txt>
           </View>
-          <Feather name={isRTL?"chevron-left":"chevron-right"} size={16} color={tColor.accent} />
+          {isRTL ? <ChevronLeft size={16} color={tColor.accent} /> : <ChevronRight size={16} color={tColor.accent} />}
         </TouchableOpacity>
 
         {/* Steps */}
@@ -179,7 +179,7 @@ export default function StudySetScreen() {
             style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:14, backgroundColor:tColor.card, borderWidth:1, borderColor:step.done?tColor.accent3+'44':tColor.border2, borderRadius:12, padding:16, marginBottom:8 }}>
             <Txt variant="mono" size={12} color="tertiary" style={{ width:20,textAlign:'center' }}>{idx+1}</Txt>
             <View style={{ width:22,height:22,borderRadius:6,borderWidth:1.5,borderColor:step.done?tColor.accent3:tColor.border,backgroundColor:step.done?tColor.accent3:'transparent',alignItems:'center',justifyContent:'center' }}>
-              {step.done && <Feather name="check" size={12} color="#fff" />}
+              {step.done && <Check size={12} color="#fff" />}
             </View>
             <Txt variant="body" size={15} style={{ flex:1,color:step.done?tColor.text3:tColor.text,textDecorationLine:step.done?'line-through':'none',lineHeight:22, textAlign: isRTL?'right':'left' }}>{step.label}</Txt>
           </TouchableOpacity>

@@ -1,4 +1,7 @@
-import { Feather } from '@expo/vector-icons';
+import { 
+  X, Home, BookOpen, Calendar, Hash, Phone, Gift, Image, Edit2, 
+  Plus, ChevronRight, ChevronLeft 
+} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, View, Dimensions, NativeSyntheticEvent, NativeScrollEvent, Image as RNImage, Alert } from 'react-native';
@@ -18,8 +21,8 @@ const AVATAR_COLORS = ['#8B4513','#2C5F8A','#4A7C59','#6B4C8A','#C0622A','#1A7A6
 export default function IDCardScreen() {
   const tColor = useTheme();
   const router = useRouter();
-  const { state, updateProfile, addProfile, deleteProfile, addAchievement, removeAchievement } = useApp();
-  const { t, isRTL } = useSettings();
+  const { state, updateProfile, addProfile, deleteProfile } = useApp();
+  const { t, isRTL, activeProfileId, setActiveProfileId } = useSettings();
   const profiles = state.profiles;
 
   const { width } = Dimensions.get('window');
@@ -34,13 +37,12 @@ export default function IDCardScreen() {
   const [university, setUniversity] = useState('');
   const [major,      setMajor]      = useState('');
   const [year,       setYear]       = useState('');
+  const [studentId,  setStudentId]  = useState('');
+  const [phone,      setPhone]      = useState('');
+  const [birthDate,  setBirthDate]  = useState('');
   const [emoji,      setEmoji]      = useState('🎓');
   const [bg,         setBg]         = useState('#8B4513');
   const [avatarUri,  setAvatarUri]  = useState<string | undefined>(undefined);
-
-  const [showAddAch, setShowAddAch] = useState(false);
-  const [achTitle,   setAchTitle]   = useState('');
-  const [achIcon,    setAchIcon]    = useState('🏆');
 
   // Sync form fields whenever activeProfile changes
   useEffect(() => {
@@ -50,6 +52,9 @@ export default function IDCardScreen() {
       setUniversity(activeProfile.university ?? '');
       setMajor(activeProfile.major ?? '');
       setYear(activeProfile.year ?? '');
+      setStudentId(activeProfile.studentId ?? '');
+      setPhone(activeProfile.phone ?? '');
+      setBirthDate(activeProfile.birthDate ?? '');
       setEmoji(activeProfile.avatarEmoji ?? '🎓');
       setBg(activeProfile.avatarBg ?? '#8B4513');
       setAvatarUri(activeProfile.avatarUri);
@@ -60,6 +65,7 @@ export default function IDCardScreen() {
     if (activeProfile) {
       updateProfile(activeProfile.id, { 
         name, email, university, major, year, 
+        studentId, phone, birthDate,
         avatarEmoji: emoji, avatarBg: bg, avatarUri 
       });
     }
@@ -101,22 +107,11 @@ export default function IDCardScreen() {
     }
   };
 
-  const handleAddAchievement = () => {
-    if (!achTitle.trim() || !activeProfile) return;
-    addAchievement(activeProfile.id, achTitle.trim(), achIcon);
-    setShowAddAch(false);
-    setAchTitle('');
-    setAchIcon('🏆');
-  };
-
-  const handleLongPressAch = (achId: string) => {
-    Alert.alert(t('delete_achievement'), t('delete_achievement_confirm'), [
-      { text: t('cancel'), style: 'cancel' },
-      { text: t('delete'), style: 'destructive', onPress: () => {
-          if (activeProfile) removeAchievement(activeProfile.id, achId);
-        } 
-      }
-    ]);
+  const handleSetAsActive = () => {
+    if (activeProfile) {
+      setActiveProfileId(activeProfile.id);
+      Alert.alert(t('success'), t('active_profile_set'));
+    }
   };
 
   return (
@@ -124,7 +119,7 @@ export default function IDCardScreen() {
       <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: tColor.border }}>
         <TouchableOpacity onPress={() => router.back()}
           style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tColor.card, borderWidth: 1, borderColor: tColor.border, alignItems: 'center', justifyContent: 'center' }}>
-          <Feather name={isRTL?"chevron-right":"x"} size={18} color={tColor.text2} />
+          {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <X size={18} color={tColor.text2} />}
         </TouchableOpacity>
         <Txt variant="display" size={20} style={{ flex: 1, marginLeft: isRTL?0:12, marginRight: isRTL?12:0, textAlign:isRTL?'right':'left' }}>{t('id_cards')} ({profiles.length})</Txt>
         
@@ -160,6 +155,9 @@ export default function IDCardScreen() {
               const pUniversity = isEditingThisCard ? university || null                   : p.university;
               const pMajor      = isEditingThisCard ? major      || null                   : p.major;
               const pYear       = isEditingThisCard ? year       || null                   : p.year;
+              const pStudentId  = isEditingThisCard ? studentId  || null                   : p.studentId;
+              const pPhone      = isEditingThisCard ? phone      || null                   : p.phone;
+              const pBirth      = isEditingThisCard ? birthDate  || null                   : p.birthDate;
               const pEmoji      = isEditingThisCard ? emoji                                : p.avatarEmoji;
               const pBg         = isEditingThisCard ? bg                                   : p.avatarBg;
               const pUri        = isEditingThisCard ? avatarUri                            : p.avatarUri;
@@ -184,30 +182,32 @@ export default function IDCardScreen() {
                       <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12, textAlign:isRTL?'right':'left' }}>{pEmail || t('no_email_set')}</Txt>
                       
                       <View style={{ gap: 4 }}>
-                        {pUniversity && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 6 }}><Txt size={12}>🏛</Txt><Txt variant="body" size={12} color="secondary">{pUniversity}</Txt></View>}
-                        {pMajor      && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 6 }}><Txt size={12}>📚</Txt><Txt variant="body" size={12} color="secondary">{pMajor}</Txt></View>}
-                        {pYear       && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 6 }}><Txt size={12}>🗓</Txt><Txt variant="body" size={12} color="secondary">{t('year_label')} {pYear}</Txt></View>}
+                        {pUniversity && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 6, alignItems:'center' }}><Home size={10} color={tColor.text3} /><Txt variant="body" size={12} color="secondary">{pUniversity}</Txt></View>}
+                        {pMajor      && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 6, alignItems:'center' }}><BookOpen size={10} color={tColor.text3} /><Txt variant="body" size={12} color="secondary">{pMajor}</Txt></View>}
+                        {(pYear || pStudentId) && (
+                          <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 12, marginTop: 4 }}>
+                            {pYear && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 4, alignItems:'center' }}><Calendar size={10} color={tColor.text3} /><Txt variant="body" size={11} color="tertiary">{t('year_label')} {pYear}</Txt></View>}
+                            {pStudentId && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 4, alignItems:'center' }}><Hash size={10} color={tColor.text3} /><Txt variant="body" size={11} color="tertiary">{pStudentId}</Txt></View>}
+                          </View>
+                        )}
+                        {(pPhone || pBirth) && (
+                           <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 12, marginTop: 2 }}>
+                             {pPhone && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 4, alignItems:'center' }}><Phone size={10} color={tColor.text3} /><Txt variant="body" size={11} color="tertiary">{pPhone}</Txt></View>}
+                             {pBirth && <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 4, alignItems:'center' }}><Gift size={10} color={tColor.text3} /><Txt variant="body" size={11} color="tertiary">{pBirth}</Txt></View>}
+                           </View>
+                        )}
                       </View>
                     </View>
                   </View>
 
-                  {/* Achievements Bar */}
-                  <View style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: tColor.bg2, borderTopWidth: 1, borderTopColor: tColor.border2 }}>
-                     <Txt variant="mono" size={9} color="tertiary" style={{ textTransform: 'uppercase', marginBottom: 6 }}>{t('achievements')}</Txt>
-                     <View style={{ flexDirection: isRTL?'row-reverse':'row', gap: 8 }}>
-                        {(p.achievements || []).length > 0 ? (
-                            p.achievements?.slice(0, 4).map(a => (
-                                <View key={a.id} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: tColor.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: tColor.border }}>
-                                    <Txt style={{ fontSize: 14 }}>{a.icon}</Txt>
-                                </View>
-                            ))
-                        ) : (
-                             <Txt variant="bodyItalic" size={10} color="tertiary">No milestones yet</Txt>
-                        )}
-                        <TouchableOpacity onPress={isEditingThisCard ? undefined : () => setShowAddAch(true)} style={{ width: 28, height: 28, borderRadius: 14, borderStyle: 'dashed', borderWidth: 1, borderColor: tColor.border, alignItems: 'center', justifyContent: 'center' }}>
-                             <Feather name="plus" size={12} color={tColor.text3} />
-                        </TouchableOpacity>
-                     </View>
+                  <View style={{ paddingHorizontal: 20, paddingVertical: 12, backgroundColor: tColor.bg2, borderTopWidth: 1, borderTopColor: tColor.border2, flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 6 }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: activeProfileId === p.id ? tColor.accent : tColor.border2 }} />
+                      <Txt variant="mono" size={10} color={activeProfileId === p.id ? 'accent' : 'tertiary'}>
+                        {activeProfileId === p.id ? t('active') : t('inactive')}
+                      </Txt>
+                    </View>
+                    <Txt variant="mono" size={10} color="tertiary">LVL 01</Txt>
                   </View>
 
                   <View style={{ paddingHorizontal: 24, paddingVertical: 12, borderTopWidth: 1, borderTopColor: tColor.border2, flexDirection: isRTL?'row-reverse':'row', justifyContent: 'space-between' }}>
@@ -231,13 +231,13 @@ export default function IDCardScreen() {
         <View style={{ padding: 20 }}>
           {editing && activeProfile ? (
             <View>
-              <View style={{ flexDirection: isRTL?'row-reverse':'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                 <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 1.2 }}>{t('avatar')}</Txt>
-                 <TouchableOpacity onPress={handlePickAvatar} style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 6 }}>
-                    <Feather name="image" size={14} color={tColor.accent} />
-                    <Txt variant="bodySemi" size={12} color="accent">Choose Photo</Txt>
-                 </TouchableOpacity>
-              </View>
+               <View style={{ flexDirection: isRTL?'row-reverse':'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 1.2 }}>{t('avatar')}</Txt>
+                  <TouchableOpacity onPress={handlePickAvatar} style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 6 }}>
+                     <Image size={14} color={tColor.accent} />
+                     <Txt variant="bodySemi" size={12} color="accent">Choose Photo</Txt>
+                  </TouchableOpacity>
+               </View>
 
               <View style={{ flexDirection: isRTL?'row-reverse':'row', flexWrap: 'wrap', gap: 8, marginBottom: 16, justifyContent: isRTL?'flex-start':'flex-start' }}>
                 {AVATAR_EMOJIS.map(e => (
@@ -262,7 +262,16 @@ export default function IDCardScreen() {
                  <Input label={t('email')}           value={email}      onChangeText={setEmail}      placeholder="student@university.edu" keyboardType="email-address" />
                  <Input label={t('university')}      value={university} onChangeText={setUniversity} placeholder="e.g. University of Oxford" />
                  <Input label={t('major_field')}     value={major}      onChangeText={setMajor}      placeholder="e.g. Computer Science" />
-                 <Input label={t('academic_year')}   value={year}       onChangeText={setYear}       placeholder="2" keyboardType="numeric" />
+                 
+                 <View style={{ flexDirection: 'row', gap: 12 }}>
+                   <View style={{ flex: 1 }}><Input label={t('academic_year')} value={year} onChangeText={setYear} placeholder="2" keyboardType="numeric" /></View>
+                   <View style={{ flex: 1 }}><Input label="Student ID" value={studentId} onChangeText={setStudentId} placeholder="2024-XXXX" /></View>
+                 </View>
+
+                 <View style={{ flexDirection: 'row', gap: 12 }}>
+                   <View style={{ flex: 1 }}><Input label="Phone" value={phone} onChangeText={setPhone} placeholder="+1..." keyboardType="phone-pad" /></View>
+                   <View style={{ flex: 1 }}><Input label="Birth Date" value={birthDate} onChangeText={setBirthDate} placeholder="YYYY-MM-DD" /></View>
+                 </View>
               </View>
 
               <Button label={t('save_changes')} onPress={handleSave} style={{ marginTop: 8 }} />
@@ -276,41 +285,36 @@ export default function IDCardScreen() {
                 <TouchableOpacity onPress={() => setEditing(true)}
                   style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 10, backgroundColor: tColor.card, borderRadius: 12, borderWidth: 1, borderColor: tColor.border2, padding: 16 }}>
                   <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: tColor.accent + '15', alignItems: 'center', justifyContent: 'center' }}>
-                    <Feather name="edit-2" size={14} color={tColor.accent} />
+                    <Edit2 size={14} color={tColor.accent} />
                   </View>
                   <Txt variant="body" size={14} color="secondary" style={{ flex: 1, textAlign:isRTL?'right':'left' }}>{t('tap_edit_profile')}</Txt>
-                  <Feather name={isRTL?'chevron-left':'chevron-right'} size={16} color={tColor.text3} />
+                  {isRTL ? <ChevronLeft size={16} color={tColor.text3} /> : <ChevronRight size={16} color={tColor.text3} />}
                 </TouchableOpacity>
               )}
               
               <TouchableOpacity onPress={handleAddNew}
                 style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 10, backgroundColor: tColor.bg2, borderRadius: 12, borderWidth: 1.5, borderColor: tColor.border, borderStyle: 'dashed', padding: 16, justifyContent: 'center' }}>
-                <Feather name="plus" size={18} color={tColor.text2} />
+                <Plus size={18} color={tColor.text2} />
                 <Txt variant="bodySemi" size={14} color="secondary">{t('add_new_id')}</Txt>
               </TouchableOpacity>
 
-              {/* Achievements Quick List */}
               {activeProfile && (
-                <View style={{ marginTop: 10 }}>
-                   <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12, textAlign:isRTL?'right':'left' }}>{t('achievements')}</Txt>
-                   <View style={{ backgroundColor: tColor.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: tColor.border2 }}>
-                      {(!activeProfile.achievements || activeProfile.achievements.length === 0) ? (
-                        <Txt variant="bodyItalic" size={13} color="tertiary" style={{ textAlign: 'center', paddingVertical: 20 }}>No achievements added yet.</Txt>
-                      ) : (
-                        activeProfile.achievements.map((a, i) => (
-                           <TouchableOpacity key={a.id} onLongPress={() => handleLongPressAch(a.id)}
-                            style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 12, marginBottom: i < activeProfile.achievements!.length - 1 ? 12 : 0 }}>
-                              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: tColor.bg2, alignItems: 'center', justifyContent: 'center' }}>
-                                 <Txt style={{ fontSize: 18 }}>{a.icon}</Txt>
-                              </View>
-                              <View style={{ flex: 1 }}>
-                                 <Txt variant="bodySemi" size={14} style={{ textAlign:isRTL?'right':'left' }}>{a.title}</Txt>
-                                 <Txt variant="mono" size={10} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{new Date(a.date).toLocaleDateString()}</Txt>
-                              </View>
-                           </TouchableOpacity>
-                        ))
-                      )}
-                   </View>
+                <View style={{ gap: 12 }}>
+                  {activeProfileId !== activeProfile.id && (
+                    <Button 
+                      label={t('set_as_active')} 
+                      onPress={handleSetAsActive}
+                      variant="primary"
+                    />
+                  )}
+                  <TouchableOpacity onPress={() => setEditing(true)}
+                    style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 10, backgroundColor: tColor.card, borderRadius: 12, borderWidth: 1, borderColor: tColor.border2, padding: 16 }}>
+                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: tColor.accent + '15', alignItems: 'center', justifyContent: 'center' }}>
+                      <Edit2 size={14} color={tColor.accent} />
+                    </View>
+                    <Txt variant="body" size={14} color="secondary" style={{ flex: 1, textAlign:isRTL?'right':'left' }}>{t('tap_edit_profile')}</Txt>
+                    {isRTL ? <ChevronLeft size={16} color={tColor.text3} /> : <ChevronRight size={16} color={tColor.text3} />}
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -319,21 +323,6 @@ export default function IDCardScreen() {
 
       </ScrollView>
 
-      <BottomSheet visible={showAddAch} onClose={() => setShowAddAch(false)} title="New Achievement" scrollable>
-        <Input label="Title" value={achTitle} onChangeText={setAchTitle} placeholder="e.g. Dean's List 2026" />
-        
-        <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10, marginTop: 10, textAlign:isRTL?'right':'left' }}>Icon</Txt>
-        <View style={{ flexDirection: isRTL?'row-reverse':'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          {['🏆','⭐','🏅','📈','🎓','🌟','✨','🎯','📚','💡'].map(e => (
-            <TouchableOpacity key={e} onPress={() => setAchIcon(e)}
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: tColor.bg2, borderWidth: 2.5, borderColor: achIcon === e ? tColor.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-              <Txt style={{ fontSize: 22 }}>{e}</Txt>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Button label="Add Milestone" onPress={handleAddAchievement} />
-      </BottomSheet>
     </SafeAreaView>
   );
 }

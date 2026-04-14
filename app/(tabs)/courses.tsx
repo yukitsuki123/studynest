@@ -1,4 +1,6 @@
-import { Feather } from '@expo/vector-icons';
+import { 
+  CheckSquare, Plus, Search, X, ChevronUp, ChevronDown, FolderOpen 
+} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
@@ -86,11 +88,11 @@ export default function CoursesScreen() {
               <>
                 <TouchableOpacity onPress={() => setSelecting(true)}
                   style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: t.card, borderWidth: 1, borderColor: t.border, alignItems: 'center', justifyContent: 'center' }}>
-                  <Feather name="check-square" size={16} color={t.text2} />
+                  <CheckSquare size={16} color={t.text2} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setShowAdd(true)}
                   style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center' }}>
-                  <Feather name="plus" size={18} color="#fff" />
+                  <Plus size={18} color="#fff" />
                 </TouchableOpacity>
               </>
             )}
@@ -100,15 +102,15 @@ export default function CoursesScreen() {
 
       {/* Search */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: t.card, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginHorizontal: 20, marginBottom: 14 }}>
-        <Feather name="search" size={16} color={t.text3} />
+        <Search size={16} color={t.text3} />
         <TextInput value={query} onChangeText={setQuery} placeholder="Search courses…" placeholderTextColor={t.text3}
           style={{ flex: 1, fontFamily: 'CrimsonPro_400Regular', fontSize: 15, color: t.text }} />
-        {query.length > 0 && <TouchableOpacity onPress={() => setQuery('')}><Feather name="x" size={14} color={t.text3} /></TouchableOpacity>}
+        {query.length > 0 && <TouchableOpacity onPress={() => setQuery('')}><X size={14} color={t.text3} /></TouchableOpacity>}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}>
-        {active.length === 0 && query.length === 0 && <EmptyState icon="🗂️" title="No courses yet" subtitle="Tap + to create your first course." />}
-        {active.length === 0 && query.length > 0  && <EmptyState icon="🔍" title="No results" subtitle={`No courses match "${query}"`} />}
+        {active.length === 0 && query.length === 0 && <EmptyState icon={FolderOpen} title="No courses yet" subtitle="Tap + to create your first course." />}
+        {active.length === 0 && query.length > 0  && <EmptyState icon={Search} title="No results" subtitle={`No courses match "${query}"`} />}
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {active.map(course => (
@@ -127,7 +129,7 @@ export default function CoursesScreen() {
             <TouchableOpacity onPress={() => setShowArchived(v => !v)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 20, marginBottom: 10 }}>
               <Txt variant="mono" size={10} color="tertiary" style={{ textTransform: 'uppercase', letterSpacing: 1.2, flex: 1 }}>— Archived ({archived.length})</Txt>
-              <Feather name={showArchived ? 'chevron-up' : 'chevron-down'} size={14} color={t.text3} />
+              {showArchived ? <ChevronUp size={14} color={t.text3} /> : <ChevronDown size={14} color={t.text3} />}
             </TouchableOpacity>
             {showArchived && (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>

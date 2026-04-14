@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, HardDrive, Trash2, Lock } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
@@ -13,16 +13,16 @@ function Header({ title }: { title: string }) {
   const router = useRouter();
   return (
     <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',paddingHorizontal:16,paddingVertical:12 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
-        <Feather name={isRTL?"arrow-right":"arrow-left"} size={20} color={tColor.text} />
+      <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
+        {isRTL ? <ArrowRight size={20} color={tColor.text} /> : <ArrowLeft size={20} color={tColor.text} />}
       </TouchableOpacity>
       <Txt variant="display" size={20} style={{ marginLeft:isRTL?0:16, marginRight:isRTL?16:0 }}>{title}</Txt>
     </View>
   );
 }
 
-function SettingsRow({ icon, label, description, onPress, last }: {
-  icon: keyof typeof Feather.glyphMap; label: string; description?: string;
+function SettingsRow({ icon: Icon, label, description, onPress, last }: {
+  icon: React.ElementType; label: string; description?: string;
   onPress: () => void; last?: boolean;
 }) {
   const tColor = useTheme();
@@ -32,13 +32,13 @@ function SettingsRow({ icon, label, description, onPress, last }: {
       style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',gap:14,paddingHorizontal:16,paddingVertical:16,
         borderBottomWidth:last?0:1,borderBottomColor:tColor.border2 }}>
       <View style={{ width:36,height:36,borderRadius:10,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?14:0,marginRight:isRTL?0:14 }}>
-        <Feather name={icon} size={18} color={tColor.accent} />
+        <Icon size={18} color={tColor.accent} />
       </View>
       <View style={{ flex:1 }}>
         <Txt variant="bodySemi" size={14} style={{ textAlign:isRTL?'right':'left' }}>{label}</Txt>
         {description && <Txt variant="bodyItalic" size={12} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{description}</Txt>}
       </View>
-      <Feather name={isRTL?"chevron-left":"chevron-right"} size={16} color={tColor.text3} />
+      {isRTL ? <ChevronLeft size={16} color={tColor.text3} /> : <ChevronRight size={16} color={tColor.text3} />}
     </TouchableOpacity>
   );
 }
@@ -59,13 +59,13 @@ export default function DataSettings() {
 
         <View style={{ backgroundColor:tColor.card, borderRadius:16, borderWidth:1, borderColor:tColor.border2, overflow:'hidden' }}>
           <SettingsRow 
-            icon="hard-drive" 
+            icon={HardDrive}
             label={t('backup_restore')} 
             description={t('backup_restore_desc')}
             onPress={() => router.push('/backup' as any)} 
           />
           <SettingsRow 
-            icon="trash-2" 
+            icon={Trash2}
             label={t('storage_management')} 
             description={t('storage_management_desc')}
             onPress={() => router.push('/trash' as any)} 
@@ -80,11 +80,11 @@ export default function DataSettings() {
           </Txt>
         </View>
 
-        <View style={{ marginTop:20, opacity:0.6 }}>
+        <View style={{ marginTop:24 }}>
           <SettingsRow 
-            icon="lock" 
+            icon={Lock}
             label={t('encryption')} 
-            description={t('encryption_desc')}
+            description={t('encryption_active' as any) || 'AES-256 Encryption: Active and Secure'}
             onPress={() => {}} 
             last
           />

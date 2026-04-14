@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
 import { Txt } from '../ui/Text';
@@ -23,7 +23,7 @@ export function PageHeader({ title, subtitle, showBack, rightElement }: PageHead
           onPress={() => router.back()}
           style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: t.card, borderWidth: 1, borderColor: t.border, alignItems: 'center', justifyContent: 'center' }}
         >
-          <Feather name="chevron-left" size={18} color={t.text2} />
+          <ChevronLeft size={18} color={t.text2} />
         </TouchableOpacity>
       )}
       <View style={{ flex: 1 }}>

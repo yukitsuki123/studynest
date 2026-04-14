@@ -1,4 +1,8 @@
-import { Feather } from '@expo/vector-icons';
+import { 
+  ChevronLeft, ChevronRight, Edit2, Plus, FileText, Image as ImageIcon, Camera, 
+  Edit3, Calendar, X, ExternalLink, Share2, Trash2, ChevronUp, ChevronDown, Book,
+  FolderOpen, CheckCircle2, Link, Target, BarChart2, Smile, Bookmark as BookmarkIcon
+} from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Alert, Animated, Dimensions, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
@@ -128,7 +132,7 @@ export default function CourseDetailScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: tColor.bg }} edges={['top']}>
         <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tColor.card, borderWidth: 1, borderColor: tColor.border, alignItems: 'center', justifyContent: 'center' }}>
-            <Feather name={isRTL?"chevron-right":"chevron-left"} size={18} color={tColor.text2} />
+            {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <ChevronLeft size={18} color={tColor.text2} />}
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -259,19 +263,19 @@ export default function CourseDetailScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: tColor.bg }} edges={['top']}>
       <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, paddingHorizontal:20, paddingVertical:14, backgroundColor:tColor.bg2, borderBottomWidth:1, borderBottomColor:tColor.border }}>
         <TouchableOpacity onPress={() => router.back()} style={{ width:34,height:34,borderRadius:9,backgroundColor:tColor.card,borderWidth:1,borderColor:tColor.border,alignItems:'center',justifyContent:'center' }}>
-          <Feather name={isRTL?"chevron-right":"chevron-left"} size={18} color={tColor.text2} />
+          {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <ChevronLeft size={18} color={tColor.text2} />}
         </TouchableOpacity>
         <View style={{ flex:1 }}>
           <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:10 }}>
             <View style={{ width:42, height:42, borderRadius:12, backgroundColor:course.color+'18', alignItems:'center', justifyContent:'center' }}>
-              <Feather name={(course.icon as any) || 'book'} size={24} color={course.color} />
+               <Book size={24} color={course.color} />
             </View>
             <Txt variant="display" size={20} style={{ flex:1, textAlign: isRTL?'right':'left' }}>{course.name}</Txt>
           </View>
           <Txt variant="mono" size={10} color="tertiary" style={{ textAlign: isRTL?'right':'left' }}>{files.length} {t('files')} · {todos.filter(td=>!td.done).length} {t('tasks')}</Txt>
         </View>
         <TouchableOpacity onPress={() => setShowEdit(true)} style={{ padding:4 }}>
-          <Feather name="edit-2" size={18} color={tColor.text3} />
+          <Edit2 size={18} color={tColor.text3} />
         </TouchableOpacity>
       </View>
 
@@ -297,13 +301,13 @@ export default function CourseDetailScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          {files.length===0 && <EmptyState icon="folder" title={t('no_files_yet')} subtitle="Tap + to add files, photos, or create a note." />}
+          {files.length===0 && <EmptyState icon={FolderOpen} title={t('no_files_yet')} subtitle="Tap + to add files, photos, or create a note." />}
 
           {/* Image gallery grid */}
           {imageFiles.length > 0 && (
             <View style={{ paddingHorizontal:20,marginBottom:16 }}>
               <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:6, marginBottom:10 }}>
-                <Feather name="image" size={13} color={tColor.text3} />
+                <ImageIcon size={13} color={tColor.text3} />
                 <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase', letterSpacing:1 }}>{imageFiles.length} {t('add_photos')}</Txt>
               </View>
               <View style={{ flexDirection: isRTL?'row-reverse':'row', flexWrap:'wrap', gap:IMAGE_GAP, borderRadius:14, overflow:'hidden', alignSelf: isRTL?'flex-end':'flex-start' }}>
@@ -322,7 +326,7 @@ export default function CourseDetailScreen() {
           {/* Document files list */}
           {docFiles.length > 0 && imageFiles.length > 0 && (
             <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:6, paddingHorizontal:20, marginBottom:8 }}>
-              <Feather name="file" size={13} color={tColor.text3} />
+              <FileText size={13} color={tColor.text3} />
               <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase', letterSpacing:1 }}>{docFiles.length} {t('files')}</Txt>
             </View>
           )}
@@ -338,7 +342,7 @@ export default function CourseDetailScreen() {
             <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase', letterSpacing:1 }}>{todos.length} {t('tasks')}</Txt>
             <Txt variant="mono" size={10} color="accent3">{todos.filter(t=>t.done).length} {t('tasks_done')}</Txt>
           </View>
-          {todos.length===0 && <EmptyState icon="check-circle" title={t('no_tasks')} subtitle="Tap + to add a to-do item for this course." />}
+          {todos.length===0 && <EmptyState icon={CheckCircle2} title={t('no_tasks')} subtitle="Tap + to add a to-do item for this course." />}
           {todos.filter(td=>!td.done).map(todo => (
             <TodoItem key={todo.id} todo={todo} onPress={() => openEditTodo(todo)}
               onLongPress={() => Alert.alert('Task',todo.title,[{text:'Edit',onPress:()=>openEditTodo(todo)},{text:'Delete',style:'destructive',onPress:()=>deleteTodo(todo.id)},{text:'Cancel',style:'cancel'}])} />
@@ -351,7 +355,7 @@ export default function CourseDetailScreen() {
 
         {activeTab==='links' && (<>
           <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase',letterSpacing:1,paddingHorizontal:20,marginBottom:10, textAlign:isRTL?'right':'left' }}>{links.length} {t('links')}</Txt>
-          {links.length===0 && <EmptyState icon="link" title={t('no_links')} subtitle="Tap + to save a useful website or resource." />}
+          {links.length===0 && <EmptyState icon={Link} title={t('no_links')} subtitle="Tap + to save a useful website or resource." />}
           {links.map(l => (
             <LinkItem key={l.id} link={l} onLongPress={() => Alert.alert('Delete Link',`Remove "${l.title}"?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>deleteLink(l.id)}])} />
           ))}
@@ -359,7 +363,7 @@ export default function CourseDetailScreen() {
 
         {activeTab==='sets' && (<>
           <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase',letterSpacing:1,paddingHorizontal:20,marginBottom:10, textAlign:isRTL?'right':'left' }}>{sets.length} {t('sets')}</Txt>
-          {sets.length===0 && <EmptyState icon="target" title={t('no_study_sets')} subtitle="Create flashcards and study paths." />}
+          {sets.length===0 && <EmptyState icon={Target} title={t('no_study_sets')} subtitle="Create flashcards and study paths." />}
           {sets.map(set => (
             <MilestoneCard key={set.id} set={set}
               onEdit={() => openEditSet(set)}
@@ -380,7 +384,7 @@ export default function CourseDetailScreen() {
               </View>
             </View>
           )}
-          {grades.length===0 && <EmptyState icon="bar-chart" title={t('no_grades')} subtitle="Add your assignment or exam results." />}
+          {grades.length===0 && <EmptyState icon={BarChart2} title={t('no_grades')} subtitle="Add your assignment or exam results." />}
           {grades.map(g => (
             <TouchableOpacity key={g.id}
               onLongPress={() => Alert.alert('Delete Grade',`Remove "${g.label}"?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>deleteGrade(g.id)}])}
@@ -401,7 +405,7 @@ export default function CourseDetailScreen() {
           <Txt variant="bodyItalic" size={12} color="tertiary" style={{ paddingHorizontal:20,marginBottom:14,lineHeight:18, textAlign:isRTL?'right':'left' }}>
             What are you grateful for in this course? Small wins count.
           </Txt>
-          {gratitudes.length===0 && <EmptyState icon="smile" title={t('no_entries_yet')} subtitle="Tap + to write your first gratitude note." />}
+          {gratitudes.length===0 && <EmptyState icon={Smile} title={t('no_entries_yet')} subtitle="Tap + to write your first gratitude note." />}
           {gratitudes.map(g => (
             <TouchableOpacity key={g.id}
               onLongPress={() => deleteGratitude(g.id)}
@@ -414,7 +418,7 @@ export default function CourseDetailScreen() {
 
         {activeTab==='bookmarks' && (<>
           <Txt variant="mono" size={10} color="tertiary" style={{ textTransform:'uppercase',letterSpacing:1,paddingHorizontal:20,marginBottom:10, textAlign:isRTL?'right':'left' }}>{bookmarks.length} {t('saved')}</Txt>
-          {bookmarks.length===0 && <EmptyState icon="bookmark" title={t('no_saved_resources')} subtitle="Tap + to bookmark an article, paper or site." />}
+          {bookmarks.length===0 && <EmptyState icon={BookmarkIcon} title={t('no_saved_resources')} subtitle="Tap + to bookmark an article, paper or site." />}
           {bookmarks.map(b => (
             <TouchableOpacity key={b.id}
               onLongPress={() => Alert.alert('Delete Bookmark',`Remove "${b.title}"?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:()=>deleteBookmark(b.id)}])}
@@ -455,37 +459,37 @@ export default function CourseDetailScreen() {
         style={{ position: 'absolute', bottom: 100, right: isRTL?undefined:20, left:isRTL?20:undefined, zIndex: 100, alignItems: isRTL?'flex-start':'flex-end', gap: 10 }}
         pointerEvents={showAddMenu ? 'auto' : 'none'}
       >
-        {[
-          { icon: 'file-text' as const, label: 'Add Document', color: '#4A7C59', action: handlePickDocs },
-          { icon: 'image' as const,     label: t('add_photos'),    color: '#1A7A6E', action: () => { setShowAddMenu(false); handlePickPhotos(); } },
-          { icon: 'camera' as const,    label: t('take_photo'),     color: '#2C5F8A', action: () => { setShowAddMenu(false); handleTakePhoto(); } },
-          { icon: 'edit-3' as const,    label: t('new_note'),       color: '#8B4513', action: () => { setShowAddMenu(false); const n=addNote(courseId!,'New Note'); router.push(`/note/${n.id}` as any); } },
-        ].map((item, i) => (
-            <Animated.View key={item.label} style={{
-              opacity: menuAnim,
-              transform: [
-                { translateY: menuAnim.interpolate({ inputRange:[0,1], outputRange:[30 + i*10, 0] }) },
-                { scale: menuAnim.interpolate({ inputRange:[0,1], outputRange:[0.6, 1] }) },
-              ],
-            }}>
-              <TouchableOpacity
-                onPress={item.action}
-                activeOpacity={0.85}
-                style={{
-                  flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:10,
-                  backgroundColor:tColor.card, borderWidth:1, borderColor:tColor.border2,
-                  borderRadius:14, paddingVertical:12, paddingHorizontal:16,
-                  shadowColor:'#000', shadowOffset:{width:0,height:3}, shadowOpacity:0.12, shadowRadius:8, elevation:4,
-                  minWidth:175,
-                }}
-              >
-                <View style={{ width:34, height:34, borderRadius:10, backgroundColor:item.color+'18', alignItems:'center', justifyContent:'center' }}>
-                  <Feather name={item.icon} size={16} color={item.color} />
-                </View>
-                <Txt variant="bodySemi" size={14}>{item.label}</Txt>
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
+          {[
+            { icon: FileText,   label: 'Add Document', color: '#4A7C59', action: handlePickDocs },
+            { icon: ImageIcon,  label: t('add_photos'),    color: '#1A7A6E', action: () => { setShowAddMenu(false); handlePickPhotos(); } },
+            { icon: Camera,     label: t('take_photo'),     color: '#2C5F8A', action: () => { setShowAddMenu(false); handleTakePhoto(); } },
+            { icon: Edit3,      label: t('new_note'),       color: '#8B4513', action: () => { setShowAddMenu(false); const n=addNote(courseId!,'New Note'); router.push(`/note/${n.id}` as any); } },
+          ].map((item, i) => (
+              <Animated.View key={item.label} style={{
+                opacity: menuAnim,
+                transform: [
+                  { translateY: menuAnim.interpolate({ inputRange:[0,1], outputRange:[30 + i*10, 0] }) },
+                  { scale: menuAnim.interpolate({ inputRange:[0,1], outputRange:[0.6, 1] }) },
+                ],
+              }}>
+                <TouchableOpacity
+                  onPress={item.action}
+                  activeOpacity={0.85}
+                  style={{
+                    flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:10,
+                    backgroundColor:tColor.card, borderWidth:1, borderColor:tColor.border2,
+                    borderRadius:14, paddingVertical:12, paddingHorizontal:16,
+                    shadowColor:'#000', shadowOffset:{width:0,height:3}, shadowOpacity:0.12, shadowRadius:8, elevation:4,
+                    minWidth:175,
+                  }}
+                >
+                  <View style={{ width:34, height:34, borderRadius:10, backgroundColor:item.color+'18', alignItems:'center', justifyContent:'center' }}>
+                    {React.createElement(item.icon, { size: 16, color: item.color })}
+                  </View>
+                  <Txt variant="bodySemi" size={14}>{item.label}</Txt>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
         </View>
 
       {/* FAB with rotation */}
@@ -501,7 +505,7 @@ export default function CourseDetailScreen() {
         <Animated.View style={{
           transform:[{ rotate: fabRotation.interpolate({ inputRange:[0,1], outputRange:['0deg','45deg'] }) }],
         }}>
-          <Feather name="plus" size={22} color="#fff" />
+          <Plus size={22} color="#fff" />
         </Animated.View>
       </TouchableOpacity>
       <EditCourseSheet course={course} visible={showEdit} onClose={() => setShowEdit(false)} onDelete={() => router.back()} />
@@ -513,15 +517,15 @@ export default function CourseDetailScreen() {
         {!showDeadlinePick && !todoDeadline && (
           <TouchableOpacity onPress={() => setShowDeadlinePick(true)}
             style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:8, paddingVertical:12, paddingHorizontal:14, borderRadius:10, borderWidth:1, borderColor:tColor.border2, backgroundColor:tColor.bg2, marginBottom:16 }}>
-            <Feather name="calendar" size={15} color={tColor.text3} />
+            <Calendar size={15} color={tColor.text3} />
             <Txt variant="bodyItalic" size={14} color="tertiary">{t('set_due_date')}…</Txt>
           </TouchableOpacity>
         )}
         {todoDeadline ? (
           <View style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:10, backgroundColor:tColor.accent+'18', borderRadius:10, borderWidth:1, borderColor:tColor.accent+'44', paddingHorizontal:14, paddingVertical:10, marginBottom:16 }}>
-            <Feather name="calendar" size={14} color={tColor.accent} />
+            <Calendar size={14} color={tColor.accent} />
             <Txt variant="bodySemi" size={13} color="accent" style={{ flex:1, textAlign:isRTL?'right':'left' }}>{new Date(todoDeadline).toLocaleDateString(dateLocale,{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</Txt>
-            <TouchableOpacity onPress={clearDeadline}><Feather name="x" size={14} color={tColor.text3} /></TouchableOpacity>
+            <TouchableOpacity onPress={clearDeadline}><X size={14} color={tColor.text3} /></TouchableOpacity>
           </View>
         ) : showDeadlinePick ? (
           <View style={{ backgroundColor:tColor.bg2,borderRadius:12,borderWidth:1,borderColor:tColor.border2,padding:14,marginBottom:16 }}>
@@ -652,25 +656,25 @@ export default function CourseDetailScreen() {
 
               <TouchableOpacity onPress={() => { setFileMenuTarget(null); handleOpenFile(fileMenuTarget); }}
                 style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, padding:14, backgroundColor:tColor.bg2, borderRadius:12 }}>
-                <Feather name="external-link" size={18} color={tColor.text} />
+                <ExternalLink size={18} color={tColor.text} />
                 <Txt variant="bodySemi" size={14}>{t('open_file')}</Txt>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={async () => { const canShare=await Sharing.isAvailableAsync(); if(canShare) Sharing.shareAsync(fileMenuTarget.uri); else Alert.alert('Error','Sharing not available'); setFileMenuTarget(null); }}
                 style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, padding:14, backgroundColor:tColor.bg2, borderRadius:12 }}>
-                <Feather name="share-2" size={18} color={tColor.text} />
+                <Share2 size={18} color={tColor.text} />
                 <Txt variant="bodySemi" size={14}>{t('share')}</Txt>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => setShowRenameInput(true)}
                 style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, padding:14, backgroundColor:tColor.bg2, borderRadius:12 }}>
-                <Feather name="edit-2" size={18} color={tColor.text} />
+                <Edit2 size={18} color={tColor.text} />
                 <Txt variant="bodySemi" size={14}>{t('rename_file')}</Txt>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => { deleteFile(fileMenuTarget.id); setFileMenuTarget(null); }}
                 style={{ flexDirection: isRTL?'row-reverse':'row', alignItems:'center', gap:12, padding:14, backgroundColor:tColor.red+'22', borderRadius:12, marginTop:8 }}>
-                <Feather name="trash-2" size={18} color={tColor.red} />
+                <Trash2 size={18} color={tColor.red} />
                 <Txt variant="bodySemi" size={14} style={{ color:tColor.red }}>{t('delete_file')}</Txt>
               </TouchableOpacity>
             </View>

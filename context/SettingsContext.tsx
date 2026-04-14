@@ -35,6 +35,9 @@ interface SettingsState {
   animations: boolean;
   homeSections: HomeSections;
   customPalette: Partial<ThemeColors>;
+  fontSizeMultiplier: number;
+  activeProfileId: string | null;
+  haptics: boolean;
 }
 
 type Action =
@@ -51,6 +54,9 @@ type Action =
   | { type: 'SET_ANIMATIONS'; payload: boolean }
   | { type: 'SET_HOME_SECTIONS'; payload: HomeSections }
   | { type: 'SET_CUSTOM_COLOR'; payload: { key: keyof ThemeColors; value: string } }
+  | { type: 'SET_FONT_SIZE_MULTIPLIER'; payload: number }
+  | { type: 'SET_ACTIVE_PROFILE_ID'; payload: string | null }
+  | { type: 'SET_HAPTICS'; payload: boolean }
   | { type: 'LOAD'; payload: SettingsState };
 
 function reducer(state: SettingsState, action: Action): SettingsState {
@@ -69,6 +75,9 @@ function reducer(state: SettingsState, action: Action): SettingsState {
     case 'SET_ANIMATIONS':   return { ...state, animations: action.payload };
     case 'SET_HOME_SECTIONS':return { ...state, homeSections: action.payload };
     case 'SET_CUSTOM_COLOR': return { ...state, customPalette: { ...state.customPalette, [action.payload.key]: action.payload.value } };
+    case 'SET_FONT_SIZE_MULTIPLIER': return { ...state, fontSizeMultiplier: action.payload };
+    case 'SET_ACTIVE_PROFILE_ID': return { ...state, activeProfileId: action.payload };
+    case 'SET_HAPTICS':   return { ...state, haptics: action.payload };
     default:                 return state;
   }
 }
@@ -96,6 +105,9 @@ interface SettingsContextValue {
   animations: boolean;
   homeSections: HomeSections;
   customPalette: Partial<ThemeColors>;
+  fontSizeMultiplier: number;
+  activeProfileId: string | null;
+  haptics: boolean;
   isRTL: boolean;
   colors: ThemeColors;
   t: (key: TranslationKey) => string;
@@ -113,6 +125,9 @@ interface SettingsContextValue {
   setAnimations: (v: boolean) => void;
   setHomeSections: (s: HomeSections) => void;
   setCustomColor: (key: keyof ThemeColors, value: string) => void;
+  setFontSizeMultiplier: (v: number) => void;
+  setActiveProfileId: (id: string | null) => void;
+  setHaptics: (v: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -128,6 +143,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       quote:true, stickyNotes:true, actions:true, courses:true, recentActivity:true, deadlines:true
     },
     customPalette: {},
+    fontSizeMultiplier: 1.0,
+    activeProfileId: null,
+    haptics: true,
   });
 
   const loadSettings = useCallback(() => {
@@ -148,6 +166,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           quote:true, stickyNotes:true, actions:true, courses:true, recentActivity:true, deadlines:true
         }))),
         customPalette: JSON.parse(getSetting('customPalette', '{}')),
+        fontSizeMultiplier: parseFloat(getSetting('fontSizeMultiplier', '1.0')),
+        activeProfileId: getSetting('activeProfileId', 'null') === 'null' ? null : getSetting('activeProfileId', 'null'),
+        haptics:    getSetting('haptics', 'true') === 'true',
       },
     });
   }, []);
@@ -183,6 +204,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     saveSetting('customPalette', JSON.stringify({ ...state.customPalette, [key]: value }));
     dispatch({type:'SET_CUSTOM_COLOR',payload:{key,value}});
   },[state.customPalette]);
+  const setFontSizeMultiplier = useCallback((v: number) => { saveSetting('fontSizeMultiplier', String(v)); dispatch({ type: 'SET_FONT_SIZE_MULTIPLIER', payload: v }); }, []);
+  const setActiveProfileId = useCallback((id: string | null) => { saveSetting('activeProfileId', id ?? 'null'); dispatch({ type: 'SET_ACTIVE_PROFILE_ID', payload: id }); }, []);
+  const setHaptics    = useCallback((v: boolean) => { saveSetting('haptics', String(v)); dispatch({ type: 'SET_HAPTICS', payload: v }); }, []);
 
   const standardColors = THEMES[state.theme][state.isDark ? 'dark' : 'light'];
   const generated      = generateThemeFromColor(state.primaryColor, state.isDark);
@@ -199,7 +223,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [state.language]);
 
   return (
-    <SettingsContext.Provider value={{ ...state, colors, isRTL, t, loadSettings, setTheme, toggleDark, setDark, setAutoDark, setFontFamily, setLanguage, setPdfReader, setImageReader, setPrimaryColor, setThemeMode, setAnimations, setHomeSections, setCustomColor }}>
+    <SettingsContext.Provider value={{ ...state, colors, isRTL, t, loadSettings, setTheme, toggleDark, setDark, setAutoDark, setFontFamily, setLanguage, setPdfReader, setImageReader, setPrimaryColor, setThemeMode, setAnimations, setHomeSections, setCustomColor, setFontSizeMultiplier, setActiveProfileId, setHaptics }}>
       {children}
     </SettingsContext.Provider>
   );

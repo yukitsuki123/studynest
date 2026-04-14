@@ -1,4 +1,6 @@
-import { Feather } from '@expo/vector-icons';
+import { 
+  ChevronLeft, ChevronRight, Eye, Edit2, Share2, Trash2, FileText, File 
+} from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -15,6 +17,8 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 
 const { documentDirectory, writeAsStringAsync } = FileSystem;
+import { BottomSheet } from '../../components/ui/BottomSheet';
+import { Button } from '../../components/ui/Button';
 
 // ─── Simple markdown-to-RN renderer ─────────────────────────────────────────
 function renderMarkdown(text: string, tColor: any, isRTL: boolean) {
@@ -94,6 +98,7 @@ export default function NoteEditorScreen() {
   const [title,    setTitle]    = useState(note?.title   ?? '');
   const [content,  setContent]  = useState(note?.content ?? '');
   const [isEditing, setIsEditing] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const [saved,    setSaved]    = useState(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -114,8 +119,8 @@ export default function NoteEditorScreen() {
 
   const handleDelete = () => {
     Alert.alert(t('delete_note'), t('delete_note_confirm'), [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => { deleteNote(noteId!); router.back(); } },
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('delete'), style: 'destructive', onPress: () => { deleteNote(noteId!); router.back(); } },
     ]);
   };
 
@@ -145,7 +150,7 @@ export default function NoteEditorScreen() {
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
     } catch (e) {
       console.error(e);
-      Alert.alert('Export Failed', 'Could not generate PDF');
+      Alert.alert(t('export_failed'), 'Could not generate PDF');
     }
   };
 
@@ -165,17 +170,12 @@ export default function NoteEditorScreen() {
       await Sharing.shareAsync(fileUri);
     } catch (e) {
       console.error(e);
-      Alert.alert('Export Failed', 'Could not generate document');
+      Alert.alert(t('export_failed'), 'Could not generate document');
     }
   };
 
   const showExportMenu = () => {
-    Alert.alert(t('share'), '', [
-      { text: t('share') + ' (' + t('in_app') + ')', onPress: handleShare },
-      { text: t('export_pdf'), onPress: handleExportPDF },
-      { text: t('export_docx'), onPress: handleExportDOCX },
-      { text: 'Cancel', style: 'cancel' }
-    ]);
+    setShowExport(true);
   };
 
   const insertSnippet = (snippet: string) => {
@@ -184,10 +184,10 @@ export default function NoteEditorScreen() {
   };
 
   if (!state.ready) {
-    return <SafeAreaView style={{ flex:1, backgroundColor:tColor.bg }} edges={['top']}><View style={{ flex:1, alignItems:'center', justifyContent:'center' }}><Txt variant="bodyItalic" size={14} color="tertiary">Loading…</Txt></View></SafeAreaView>;
+    return <SafeAreaView style={{ flex:1, backgroundColor:tColor.bg }} edges={['top']}><View style={{ flex:1, alignItems:'center', justifyContent:'center' }}><Txt variant="bodyItalic" size={14} color="tertiary">{t('loading')}</Txt></View></SafeAreaView>;
   }
   if (!note) {
-    return <SafeAreaView style={{ flex:1, backgroundColor:tColor.bg }} edges={['top']}><View style={{ flex:1, alignItems:'center', justifyContent:'center' }}><Txt variant="display" size={18} color="tertiary">Note not found</Txt></View></SafeAreaView>;
+    return <SafeAreaView style={{ flex:1, backgroundColor:tColor.bg }} edges={['top']}><View style={{ flex:1, alignItems:'center', justifyContent:'center' }}><Txt variant="display" size={18} color="tertiary">{t('note_not_found')}</Txt></View></SafeAreaView>;
   }
 
   const words = wordCount(content);
@@ -201,7 +201,7 @@ export default function NoteEditorScreen() {
         <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: tColor.border, backgroundColor: tColor.card }}>
           <TouchableOpacity onPress={() => { handleSave(); router.back(); }}
             style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tColor.bg, borderWidth: 1, borderColor: tColor.border, alignItems: 'center', justifyContent: 'center' }}>
-            <Feather name={isRTL?"chevron-right":"chevron-left"} size={18} color={tColor.text2} />
+            {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <ChevronLeft size={18} color={tColor.text2} />}
           </TouchableOpacity>
 
           <TextInput
@@ -216,15 +216,15 @@ export default function NoteEditorScreen() {
             onPress={() => { if (isEditing) handleSave(); setIsEditing((v) => !v); }}
             style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8,
               backgroundColor: isEditing ? tColor.accent : tColor.bg2, borderWidth: 1, borderColor: isEditing ? tColor.accent : tColor.border }}>
-            <Feather name={isEditing ? 'eye' : 'edit-2'} size={13} color={isEditing ? '#fff' : tColor.text2} />
+            {isEditing ? <Eye size={13} color="#fff" /> : <Edit2 size={13} color={tColor.text2} />}
             <Txt variant="mono" size={11} style={{ color: isEditing ? '#fff' : tColor.text2 }}>{isEditing ? t('preview') : t('edit')}</Txt>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showExportMenu} style={{ padding: 4 }}>
-            <Feather name="share" size={16} color={tColor.text3} />
+            <Share2 size={16} color={tColor.text3} />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
-            <Feather name="trash-2" size={16} color={tColor.text3} />
+            <Trash2 size={16} color={tColor.text3} />
           </TouchableOpacity>
         </View>
 
@@ -278,6 +278,29 @@ export default function NoteEditorScreen() {
         )}
 
       </KeyboardAvoidingView>
+
+      <BottomSheet visible={showExport} onClose={() => setShowExport(false)} title={t('share')}>
+        <View style={{ gap: 12, paddingVertical: 10 }}>
+          <Button 
+            label={t('share') + ' (' + t('in_app') + ')'} 
+            icon={<Share2 size={18} color={tColor.text} />}
+            onPress={() => { setShowExport(false); handleShare(); }} 
+            variant="secondary"
+          />
+          <Button 
+            label={t('export_pdf')} 
+            icon={<FileText size={18} color={tColor.text} />}
+            onPress={() => { setShowExport(false); handleExportPDF(); }} 
+            variant="secondary"
+          />
+          <Button 
+            label={t('export_docx')} 
+            icon={<File size={18} color={tColor.text} />}
+            onPress={() => { setShowExport(false); handleExportDOCX(); }} 
+            variant="secondary"
+          />
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 }

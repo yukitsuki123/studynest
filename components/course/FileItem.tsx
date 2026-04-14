@@ -1,18 +1,18 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { FileText, Monitor, Edit3, Image as ImageIcon, File, MoreVertical } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { CourseFile } from '../../constants/types';
 import { Txt } from '../ui/Text';
 
-const FILE_ICON: Record<string, keyof typeof Feather.glyphMap> = {
-  pdf:   'file-text',
-  docx:  'file-text',
-  pptx:  'monitor',
-  note:  'edit-3',
-  image: 'image',
-  other: 'file',
+const FILE_ICON: Record<string, React.ElementType> = {
+  pdf:   FileText,
+  docx:  FileText,
+  pptx:  Monitor,
+  note:  Edit3,
+  image: ImageIcon,
+  other: File,
 };
 
 const FILE_COLORS: Record<string, string> = {
@@ -39,7 +39,7 @@ interface FileItemProps {
 
 export function FileItem({ file, onPress, onLongPress }: FileItemProps) {
   const t = useTheme();
-  const icon  = FILE_ICON[file.type]  ?? 'file';
+  const IconComponent = FILE_ICON[file.type]  ?? File;
   const color = FILE_COLORS[file.type] ?? t.text3;
 
   return (
@@ -51,7 +51,7 @@ export function FileItem({ file, onPress, onLongPress }: FileItemProps) {
         </View>
       ) : (
         <View style={{ width:40, height:40, borderRadius:10, backgroundColor:color+'18', alignItems:'center', justifyContent:'center' }}>
-          <Feather name={icon} size={18} color={color} />
+          <IconComponent size={18} color={color} />
         </View>
       )}
       <View style={{ flex:1, minWidth:0 }}>
@@ -62,7 +62,7 @@ export function FileItem({ file, onPress, onLongPress }: FileItemProps) {
       </View>
       {onLongPress && (
         <TouchableOpacity onPress={onLongPress} style={{ padding:4 }}>
-          <Feather name="more-vertical" size={16} color={t.text3} />
+          <MoreVertical size={16} color={t.text3} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>

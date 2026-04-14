@@ -11,6 +11,9 @@ export interface UserProfile {
   university?: string;
   major?: string;
   year?: string;
+  studentId?: string;
+  phone?: string;
+  birthDate?: string;
   avatarEmoji: string;
   avatarBg: string;
   avatarUri?: string;
@@ -164,7 +167,7 @@ export interface StudyStreak {
 
 export interface TrashItem {
   id: string;
-  type: 'course' | 'note' | 'todo' | 'file';
+  type: 'course' | 'note' | 'todo' | 'file' | 'studySet' | 'link' | 'bookmark' | 'grade' | 'exam' | 'sticky' | 'gratitude';
   title: string;
   data: string; // JSON serialized
   deletedAt: number;

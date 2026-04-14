@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Edit2, Trash2, Check } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { StudySet } from '../../constants/types';
@@ -26,12 +26,12 @@ export function MilestoneCard({ set, onEdit, onDelete }: MilestoneCardProps) {
         <Txt variant="display" size={15} style={{ flex:1 }}>{set.title}</Txt>
         {onEdit && (
           <TouchableOpacity onPress={onEdit} style={{ padding:4 }}>
-            <Feather name="edit-2" size={14} color={t.text3} />
+            <Edit2 size={14} color={t.text3} />
           </TouchableOpacity>
         )}
         {onDelete && (
           <TouchableOpacity onPress={onDelete} style={{ padding:4,marginLeft:4 }}>
-            <Feather name="trash-2" size={14} color={t.red} />
+            <Trash2 size={14} color={t.red} />
           </TouchableOpacity>
         )}
       </View>
@@ -45,7 +45,7 @@ export function MilestoneCard({ set, onEdit, onDelete }: MilestoneCardProps) {
           <TouchableOpacity key={step.id} onPress={() => toggleStep(set.id, step.id)}
             style={{ flexDirection:'row',alignItems:'center',gap:10,paddingVertical:7,borderBottomWidth:i<set.steps.length-1?1:0,borderBottomColor:t.border2 }}>
             <View style={{ width:18,height:18,borderRadius:5,borderWidth:1.5,borderColor:step.done?t.accent3:t.border,backgroundColor:step.done?t.accent3:'transparent',alignItems:'center',justifyContent:'center' }}>
-              {step.done && <Feather name="check" size={10} color="#fff" />}
+              {step.done && <Check size={10} color="#fff" />}
             </View>
             <Txt variant="body" size={13} style={{ color:step.done?t.text3:t.text2,textDecorationLine:step.done?'line-through':'none',flex:1 }}>{step.label}</Txt>
           </TouchableOpacity>

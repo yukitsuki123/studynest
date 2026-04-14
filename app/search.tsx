@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight, Search as SearchIcon, X, Book, File, FileText, CheckSquare, Link as LinkIcon, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useRef, useState } from 'react';
 import { FlatList, TextInput, TouchableOpacity, View } from 'react-native';
@@ -10,8 +10,8 @@ import { useSettings } from '../context/SettingsContext';
 import { TranslationKey } from '../constants/translations';
 
 type ResultKind = 'course' | 'file' | 'note' | 'todo' | 'link' | 'exam';
-interface SearchResult { id:string; kind:ResultKind; title:string; subtitle:string; icon:string; navTarget:string; }
-const KIND_ICONS: Record<ResultKind,string> = { course:'📚',file:'📄',note:'📝',todo:'✅',link:'🔗',exam:'📅' };
+interface SearchResult { id:string; kind:ResultKind; title:string; subtitle:string; icon:React.ElementType; navTarget:string; }
+const KIND_ICONS: Record<ResultKind,React.ElementType> = { course:Book,file:File,note:FileText,todo:CheckSquare,link:LinkIcon,exam:Calendar };
 
 const KIND_LABELS: Record<ResultKind, TranslationKey> = {
   course: 'courses',
@@ -38,7 +38,7 @@ export default function SearchScreen() {
     
     const dateLocale = isRTL ? 'ar-EG' : 'en-GB';
 
-    state.courses.filter(c=>c.name.toLowerCase().includes(q)).forEach(c=>out.push({id:c.id,kind:'course',title:c.name,subtitle:t('courses'),icon:c.icon,navTarget:`/course/${c.id}`}));
+    state.courses.filter(c=>c.name.toLowerCase().includes(q)).forEach(c=>out.push({id:c.id,kind:'course',title:c.name,subtitle:t('courses'),icon:Book,navTarget:`/course/${c.id}`}));
     state.files.filter(f=>f.name.toLowerCase().includes(q)).forEach(f=>out.push({id:f.id,kind:'file',title:f.name,subtitle:cm[f.courseId]?.name??'',icon:KIND_ICONS.file,navTarget:`/course/${f.courseId}`}));
     state.notes.filter(n=>n.title.toLowerCase().includes(q)||n.content.toLowerCase().includes(q)).forEach(n=>out.push({id:n.id,kind:'note',title:n.title,subtitle:cm[n.courseId]?.name??'',icon:KIND_ICONS.note,navTarget:`/note/${n.id}`}));
     state.todos.filter(td=>td.title.toLowerCase().includes(q)).forEach(td=>out.push({id:td.id,kind:'todo',title:td.title,subtitle:(td.done ? '✓ ' : '') + ( cm[td.courseId]?.name??''),icon:KIND_ICONS.todo,navTarget:`/course/${td.courseId}`}));
@@ -52,10 +52,10 @@ export default function SearchScreen() {
       {/* Header */}
       <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: tColor.border }}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Feather name={isRTL?"arrow-right":"arrow-left"} size={20} color={tColor.text2} />
+          {isRTL ? <ArrowRight size={20} color={tColor.text2} /> : <ArrowLeft size={20} color={tColor.text2} />}
         </TouchableOpacity>
         <View style={{ flex: 1, flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 8, backgroundColor: tColor.card, borderWidth: 1, borderColor: tColor.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9 }}>
-          <Feather name="search" size={16} color={tColor.text3} />
+          <SearchIcon size={16} color={tColor.text3} />
           <TextInput
             ref={inputRef}
             value={query}
@@ -67,7 +67,7 @@ export default function SearchScreen() {
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
-              <Feather name="x" size={14} color={tColor.text3} />
+              <X size={14} color={tColor.text3} />
             </TouchableOpacity>
           )}
         </View>
@@ -99,7 +99,7 @@ export default function SearchScreen() {
           <TouchableOpacity onPress={() => router.push(item.navTarget as any)} activeOpacity={0.8}
             style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: tColor.border2 }}>
             <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: tColor.bg2, alignItems: 'center', justifyContent: 'center' }}>
-              <Txt style={{ fontSize: 18 }}>{item.icon}</Txt>
+              {React.createElement(item.icon, { size: 18, color: tColor.text })}
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Txt variant="bodySemi" size={14} numberOfLines={1} style={{ textAlign:isRTL?'right':'left' }}>{item.title}</Txt>

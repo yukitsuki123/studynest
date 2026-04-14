@@ -1,11 +1,11 @@
 export const FOLDER_ICONS = [
   'book', 'book-open', 'database', 'bar-chart-2', 'pen-tool', 'monitor',
   'activity', 'thermometer', 'home', 'globe', 'music', 'edit-3',
-  'hash', 'file-text', 'search', 'scale', 'smile', 'feather',
+  'hash', 'file-text', 'search', 'bar-chart', 'smile', 'feather',
   'zap', 'radio', 'box', 'target', 'map-pin', 'folder',
-  'gift', 'award', 'award', 'tool', 'key', 'layers', 'edit',
-  'briefcase', 'folder', 'folder-plus', 'archive', 'calendar', 'clock', 'watch',
-  'hourglass'
+  'gift', 'award', 'tool', 'key', 'layers', 'edit',
+  'briefcase', 'folder-plus', 'archive', 'calendar', 'clock', 'watch',
+  'pie-chart'
 ];
 
 export const FOLDER_COLORS = [

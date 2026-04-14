@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { db } from '../utils/db';
 import CryptoJS from 'crypto-js';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import {
   Course, CourseFile, Note, TodoItem, StudySet, StudySetStep,
   Link, Priority, FileType, GradeEntry, Exam, PomodoroSession,
@@ -10,8 +13,26 @@ import {
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 
+const LOCAL_KEY = 'studynest_local_v1_secure_key_123';
+
+const encrypt = (val: string | null | undefined) => {
+  if (!val) return null;
+  return CryptoJS.AES.encrypt(val, LOCAL_KEY).toString();
+};
+
+const decrypt = (val: string | null | undefined) => {
+  if (!val) return null;
+  try {
+    const bytes = CryptoJS.AES.decrypt(val, LOCAL_KEY);
+    const original = bytes.toString(CryptoJS.enc.Utf8);
+    return original || val;
+  } catch {
+    return val;
+  }
+};
+
 // ─── Row types ────────────────────────────────────────────────────────────────
-interface ProfileRow  { id:string;name:string;email:string;university:string|null;major:string|null;year:string|null;avatar_emoji:string;avatar_bg:string;id_card_visible:number;achievements:string;avatar_uri:string|null }
+interface ProfileRow  { id:string;name:string;email:string;university:string|null;major:string|null;year:string|null;avatar_emoji:string;avatar_bg:string;id_card_visible:number;achievements:string;avatar_uri:string|null;student_id:string|null;phone:string|null;birth_date:string|null }
 interface CourseRow   { id:string;name:string;icon:string;color:string;archived:number;created_at:number;updated_at:number }
 interface FileRow     { id:string;course_id:string;name:string;uri:string;type:string;size:number|null;added_at:number }
 interface NoteRow     { id:string;course_id:string;title:string;content:string;template:string;updated_at:number }
@@ -30,28 +51,40 @@ interface StreakRow    { id:string;last_date:string;current_streak:number;longes
 interface TrashRow    { id:string;type:string;title:string;data:string;deleted_at:number }
 
 // ─── Mappers ──────────────────────────────────────────────────────────────────
-const mapProfile  = (r:ProfileRow):UserProfile   => {
-  let achievements = [];
-  try { achievements = JSON.parse(r.achievements || '[]'); } catch(_) {}
+const mapProfile = (r: ProfileRow): UserProfile => {
+  let achievements: UserProfile['achievements'] = [];
+  try {
+    const decAch = decrypt(r.achievements);
+    achievements = JSON.parse(decAch || '[]');
+  } catch (_) { achievements = []; }
+
   return {
-    id:r.id,name:r.name,email:r.email,university:r.university??undefined,
-    major:r.major??undefined,year:r.year??undefined,
-    avatarEmoji:r.avatar_emoji,avatarBg:r.avatar_bg,
+    id: r.id,
+    name: decrypt(r.name) || 'Student',
+    email: decrypt(r.email) || '',
+    university: decrypt(r.university) ?? undefined,
+    major: decrypt(r.major) ?? undefined,
+    year: decrypt(r.year) ?? undefined,
+    avatarEmoji: r.avatar_emoji,
+    avatarBg: r.avatar_bg,
     avatarUri: r.avatar_uri ?? undefined,
-    idCardVisible:r.id_card_visible===1,
+    idCardVisible: r.id_card_visible === 1,
+    studentId: decrypt(r.student_id) ?? undefined,
+    phone: decrypt(r.phone) ?? undefined,
+    birthDate: decrypt(r.birth_date) ?? undefined,
     achievements
   };
 };
 const mapCourse   = (r:CourseRow):Course         => ({id:r.id,name:r.name,icon:r.icon,color:r.color,archived:r.archived===1,createdAt:r.created_at,updatedAt:r.updated_at});
 const mapFile     = (r:FileRow):CourseFile       => ({id:r.id,courseId:r.course_id,name:r.name,uri:r.uri,type:r.type as FileType,size:r.size??undefined,addedAt:r.added_at});
-const mapNote     = (r:NoteRow):Note             => ({id:r.id,courseId:r.course_id,title:r.title,content:r.content,template:((r.template as any)||'blank') as Note['template'],updatedAt:r.updated_at});
-const mapTodo     = (r:TodoRow):TodoItem         => ({id:r.id,courseId:r.course_id,title:r.title,done:r.done===1,deadline:r.deadline??undefined,priority:r.priority as Priority,createdAt:r.created_at});
+const mapNote     = (r:NoteRow):Note             => ({id:r.id,courseId:r.course_id,title:decrypt(r.title)||(r.title),content:decrypt(r.content)||(r.content),template:((r.template as any)||'blank') as Note['template'],updatedAt:r.updated_at});
+const mapTodo     = (r:TodoRow):TodoItem         => ({id:r.id,courseId:r.course_id,title:decrypt(r.title)||(r.title),done:r.done===1,deadline:r.deadline??undefined,priority:r.priority as Priority,createdAt:r.created_at});
 const mapLink     = (r:LinkRow):Link             => ({id:r.id,courseId:r.course_id,title:r.title,url:r.url,addedAt:r.added_at});
 const mapBookmark = (r:BookmarkRow):Bookmark     => ({id:r.id,courseId:r.course_id,title:r.title,url:r.url,note:r.note??undefined,addedAt:r.added_at});
 const mapGrade    = (r:GradeRow):GradeEntry      => ({id:r.id,courseId:r.course_id,label:r.label,score:r.score,maxScore:r.max_score,weight:r.weight,createdAt:r.created_at});
 const mapExam     = (r:ExamRow):Exam             => ({id:r.id,courseId:r.course_id,title:r.title,date:r.date,location:r.location??undefined,notes:r.notes??undefined,createdAt:r.created_at});
 const mapPom      = (r:PomRow):PomodoroSession   => ({id:r.id,courseId:r.course_id??undefined,duration:r.duration,completedAt:r.completed_at});
-const mapSticky   = (r:StickyRow):StickyNote     => ({id:r.id,content:r.content,color:r.color,createdAt:r.created_at,updatedAt:r.updated_at});
+const mapSticky   = (r:StickyRow):StickyNote     => ({id:r.id,content:decrypt(r.content)||(r.content),color:r.color,createdAt:r.created_at,updatedAt:r.updated_at});
 const mapIntent   = (r:IntentionRow):DailyIntention => ({id:r.id,date:r.date,intention:r.intention,mood:r.mood as any,createdAt:r.created_at});
 const mapGrat     = (r:GratRow):GratitudeEntry   => ({id:r.id,courseId:r.course_id,content:r.content,createdAt:r.created_at});
 const mapStreak   = (r:StreakRow):StudyStreak    => ({lastDate:r.last_date,currentStreak:r.current_streak,longestStreak:r.longest_streak});
@@ -200,7 +233,7 @@ function reducer(state:AppState,action:Action):AppState {
 interface AppContextValue {
   state:AppState;
   loadAll:()=>void;
-  addProfile:(name:string)=>UserProfile;
+  addProfile:(name:string)=>void;
   updateProfile:(id:string,patch:Partial<UserProfile>)=>void;
   deleteProfile:(id:string)=>void;
   addCourse:(name:string,icon:string,color:string)=>Course;
@@ -244,34 +277,14 @@ interface AppContextValue {
   deleteFromTrash:(id:string)=>void;
   addAchievement:(profileId:string, title:string, icon:string)=>void;
   removeAchievement:(profileId:string, achId:string)=>void;
-  exportBackup:(password?:string)=>Promise<string>;
-  importBackup:(json:string,password?:string)=>boolean;
+  exportBackup:(password?:string)=>Promise<boolean>;
+  importBackup:(password?:string)=>Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextValue|null>(null);
 
 export function AppProvider({children}:{children:React.ReactNode}) {
   const [state,dispatch] = useReducer(reducer,initialState);
-
-  const moveToTrash = useCallback((type:TrashItem['type'],title:string,data:object):string=>{
-    const id=uuid(),now=Date.now(),json=JSON.stringify(data);
-    try{db.runSync('INSERT INTO trash (id,type,title,data,deleted_at) VALUES (?,?,?,?,?)',[id,type,title,json,now]);}catch(_){}
-    dispatch({type:'ADD_TRASH',payload:{id,type,title,data:json,deletedAt:now}});
-    return id;
-  },[]);
-
-  const restoreFromTrash = useCallback((id:string):TrashItem|null=>{
-    const item=state.trash.find(t=>t.id===id)??null;
-    if(!item)return null;
-    try{db.runSync('DELETE FROM trash WHERE id=?',[id]);}catch(_){}
-    dispatch({type:'RESTORE_TRASH',payload:id});
-    return item;
-  },[state.trash]);
-
-  const deleteFromTrash = useCallback((id:string)=>{
-    try{db.runSync('DELETE FROM trash WHERE id=?',[id]);}catch(_){}
-    dispatch({type:'DELETE_TRASH',payload:id});
-  },[]);
 
   const loadAll = useCallback(()=>{
     const profileRows = db.getAllSync<ProfileRow>('SELECT * FROM user_profile');
@@ -298,27 +311,114 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     dispatch({type:'LOAD',payload:{profiles,profile,courses,files,notes,todos,studySets,links,bookmarks,grades,exams,pomodoroSessions,stickyNotes,dailyIntentions,gratitudeEntries,streak,trash}});
   },[]);
 
-  const addProfile = useCallback((name:string):UserProfile=>{
-    const id=uuid();
-    db.runSync('INSERT INTO user_profile (id,name,email,avatar_emoji,avatar_bg,id_card_visible) VALUES (?,?,?,"🎓","#8B4513",1)',[id,name,'']);
-    const p:UserProfile={id,name,email:'',avatarEmoji:'🎓',avatarBg:'#8B4513',idCardVisible:true};
-    dispatch({type:'ADD_PROFILE',payload:p});return p;
+  const moveToTrash = useCallback((type:TrashItem['type'],title:string,data:object):string=>{
+    const id=uuid(),now=Date.now(),json=JSON.stringify(data);
+    try{db.runSync('INSERT INTO trash (id,type,title,data,deleted_at) VALUES (?,?,?,?,?)',[id,type,title,json,now]);}catch(_){}
+    dispatch({type:'ADD_TRASH',payload:{id,type,title,data:json,deletedAt:now}});
+    return id;
   },[]);
 
+  const restoreFromTrash = useCallback((id:string):TrashItem|null=>{
+    const item=state.trash.find(t=>t.id===id)??null;
+    if(!item)return null;
+    try {
+      const data = JSON.parse(item.data);
+      db.withTransactionSync(() => {
+        switch (item.type) {
+          case 'course':
+            db.runSync('INSERT INTO courses (id,name,icon,color,archived,created_at,updated_at) VALUES (?,?,?,?,?,?,?)', [data.id, data.name, data.icon, data.color, data.archived?1:0, data.createdAt, data.updatedAt]);
+            break;
+          case 'file':
+            db.runSync('INSERT INTO course_files (id,course_id,name,uri,type,size,added_at) VALUES (?,?,?,?,?,?,?)', [data.id, data.courseId, data.name, data.uri, data.type, data.size??null, data.addedAt]);
+            break;
+          case 'note':
+            db.runSync('INSERT INTO notes (id,course_id,title,content,template,updated_at) VALUES (?,?,?,?,?,?)', [data.id, data.courseId, data.title, data.content, data.template, data.updatedAt]);
+            db.runSync('INSERT INTO course_files (id,course_id,name,uri,type,size,added_at) VALUES (?,?,?,?,?,?,?)', [uuid(), data.courseId, data.title, data.id, 'note', null, data.updatedAt]);
+            break;
+          case 'todo':
+            db.runSync('INSERT INTO todos (id,course_id,title,done,deadline,priority,created_at) VALUES (?,?,?,?,?,?,?)', [data.id, data.courseId, data.title, data.done?1:0, data.deadline??null, data.priority, data.createdAt]);
+            break;
+          case 'studySet':
+            db.runSync('INSERT INTO study_sets (id,course_id,title,created_at) VALUES (?,?,?,?)', [data.id, data.courseId, data.title, data.createdAt]);
+            data.steps?.forEach((s: any, i: number) => {
+              db.runSync('INSERT INTO study_set_steps (id,set_id,label,done,position) VALUES (?,?,?,?,?)', [s.id, data.id, s.label, s.done?1:0, i]);
+            });
+            break;
+          case 'link':
+            db.runSync('INSERT INTO links (id,course_id,title,url,added_at) VALUES (?,?,?,?,?)', [data.id, data.courseId, data.title, data.url, data.addedAt]);
+            break;
+          case 'bookmark':
+            db.runSync('INSERT INTO bookmarks (id,course_id,title,url,note,added_at) VALUES (?,?,?,?,?,?)', [data.id, data.courseId, data.title, data.url, data.note??null, data.addedAt]);
+            break;
+          case 'grade':
+            db.runSync('INSERT INTO grades (id,course_id,label,score,max_score,weight,created_at) VALUES (?,?,?,?,?,?,?)', [data.id, data.courseId, data.label, data.score, data.maxScore, data.weight, data.createdAt]);
+            break;
+          case 'exam':
+            db.runSync('INSERT INTO exams (id,course_id,title,date,location,notes,created_at) VALUES (?,?,?,?,?,?,?)', [data.id, data.courseId, data.title, data.date, data.location??null, data.notes??null, data.createdAt]);
+            break;
+          case 'sticky':
+            db.runSync('INSERT INTO sticky_notes (id,content,color,created_at,updated_at) VALUES (?,?,?,?,?)', [data.id, data.content, data.color, data.createdAt, data.updatedAt]);
+            break;
+          case 'gratitude':
+            db.runSync('INSERT INTO gratitude_entries (id,course_id,content,created_at) VALUES (?,?,?,?)', [data.id, data.courseId, data.content, data.createdAt]);
+            break;
+        }
+        db.runSync('DELETE FROM trash WHERE id=?',[id]);
+      });
+      dispatch({type:'RESTORE_TRASH',payload:id});
+      loadAll();
+      return item;
+    } catch(e) { 
+      console.error('Restore failed', e);
+      return null; 
+    }
+  },[state.trash, loadAll]);
+
+  const deleteFromTrash = useCallback((id:string)=>{
+    try{db.runSync('DELETE FROM trash WHERE id=?',[id]);}catch(_){}
+    dispatch({type:'DELETE_TRASH',payload:id});
+  },[]);
+
+
+
+  const addProfile = useCallback((name:string)=>{
+    const id = uuid();
+    db.runSync('INSERT INTO user_profile (id,name,email,avatar_emoji,avatar_bg) VALUES (?,?,?,?,?)',
+      [id, encrypt(name), encrypt(''), '🎓', '#8B4513']);
+    loadAll();
+  },[loadAll]);
+
   const updateProfile = useCallback((id:string,patch:Partial<UserProfile>)=>{
-    const f=(v:any)=>v??null;
-    db.runSync('UPDATE user_profile SET name=COALESCE(?,name),email=COALESCE(?,email),university=COALESCE(?,university),major=COALESCE(?,major),year=COALESCE(?,year),avatar_emoji=COALESCE(?,avatar_emoji),avatar_bg=COALESCE(?,avatar_bg),id_card_visible=COALESCE(?,id_card_visible),avatar_uri=COALESCE(?,avatar_uri) WHERE id=?',
-      [f(patch.name),f(patch.email),f(patch.university),f(patch.major),f(patch.year),f(patch.avatarEmoji),f(patch.avatarBg),patch.idCardVisible!==undefined?(patch.idCardVisible?1:0):null,f(patch.avatarUri),id]);
+    db.runSync(`UPDATE user_profile SET 
+      name=COALESCE(?,name), email=COALESCE(?,email), university=COALESCE(?,university), 
+      major=COALESCE(?,major), year=COALESCE(?,year), avatar_emoji=COALESCE(?,avatar_emoji), 
+      avatar_bg=COALESCE(?,avatar_bg), avatar_uri=COALESCE(?,avatar_uri),
+      student_id=COALESCE(?,student_id), phone=COALESCE(?,phone), birth_date=COALESCE(?,birth_date)
+      WHERE id=?`,
+      [
+        patch.name !== undefined ? encrypt(patch.name) : null,
+        patch.email !== undefined ? encrypt(patch.email) : null,
+        patch.university !== undefined ? encrypt(patch.university) : null,
+        patch.major !== undefined ? encrypt(patch.major) : null,
+        patch.year !== undefined ? encrypt(patch.year) : null,
+        patch.avatarEmoji ?? null,
+        patch.avatarBg ?? null,
+        patch.avatarUri ?? null,
+        patch.studentId !== undefined ? encrypt(patch.studentId) : null,
+        patch.phone !== undefined ? encrypt(patch.phone) : null,
+        patch.birthDate !== undefined ? encrypt(patch.birthDate) : null,
+        id
+      ]);
     dispatch({type:'UPDATE_PROFILE',payload:{id,patch}});
   },[]);
 
   const addAchievement = useCallback((profileId:string, title:string, icon:string)=>{
-    const profile = state.profiles.find(p => p.id === profileId);
-    if (!profile) return;
+    const p = state.profiles.find(x=>x.id===profileId);
+    if(!p) return;
     const newAch = { id: uuid(), title, icon, date: Date.now() };
-    const newAchievements = [...(profile.achievements || []), newAch];
-    db.runSync('UPDATE user_profile SET achievements=? WHERE id=?', [JSON.stringify(newAchievements), profileId]);
-    dispatch({type:'ADD_ACHIEVEMENT', payload: {profileId, achievement: newAch}});
+    const achievements = [...(p.achievements||[]), newAch];
+    db.runSync('UPDATE user_profile SET achievements=? WHERE id=?', [encrypt(JSON.stringify(achievements)), profileId]);
+    dispatch({type:'UPDATE_PROFILE', payload:{id:profileId, patch:{achievements}}});
   },[state.profiles]);
 
   const removeAchievement = useCallback((profileId:string, achId:string)=>{
@@ -347,7 +447,12 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     dispatch({type:'UPDATE_COURSE',payload:{id,patch:{...patch,updatedAt:now}}});
   },[]);
 
-  const deleteCourse = useCallback((id:string)=>{db.runSync('DELETE FROM courses WHERE id=?',[id]);dispatch({type:'DELETE_COURSE',payload:id});},[]);
+  const deleteCourse = useCallback((id:string)=>{
+    const course = state.courses.find(c=>c.id===id);
+    if(course) moveToTrash('course', course.name, course);
+    db.runSync('DELETE FROM courses WHERE id=?',[id]);
+    dispatch({type:'DELETE_COURSE',payload:id});
+  },[state.courses, moveToTrash]);
   const archiveCourse = useCallback((id:string,archived:boolean)=>{db.runSync('UPDATE courses SET archived=? WHERE id=?',[archived?1:0,id]);dispatch({type:'ARCHIVE_COURSE',payload:{id,archived}});},[]);
 
   const addFile = useCallback((file:Omit<CourseFile,'id'|'addedAt'>)=>{
@@ -356,7 +461,12 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     dispatch({type:'ADD_FILE',payload:{...file,id,addedAt:now}});
   },[]);
 
-  const deleteFile = useCallback((id:string)=>{db.runSync('DELETE FROM course_files WHERE id=?',[id]);dispatch({type:'DELETE_FILE',payload:id});},[]);
+  const deleteFile = useCallback((id:string)=>{
+    const file = state.files.find(f=>f.id===id);
+    if(file) moveToTrash('file', file.name, file);
+    db.runSync('DELETE FROM course_files WHERE id=?',[id]);
+    dispatch({type:'DELETE_FILE',payload:id});
+  },[state.files, moveToTrash]);
 
   const renameFile = useCallback((id:string,name:string)=>{
     db.runSync('UPDATE course_files SET name=? WHERE id=?',[name,id]);
@@ -367,7 +477,7 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     const id=uuid(),fileId=uuid(),now=Date.now();
     const templates:{[k:string]:string}={blank:`# ${title}\n\n`,lecture:`# ${title}\n\n**Date:** ${new Date().toLocaleDateString()}\n**Lecturer:**\n\n## Objectives\n\n## Key Points\n\n## Summary\n`,meeting:`# ${title}\n\n**Date:** ${new Date().toLocaleDateString()}\n**Attendees:**\n\n## Agenda\n\n## Discussion\n\n## Action Items\n`,summary:`# ${title} — Summary\n\n## Overview\n\n## Main Points\n\n## Conclusion\n`};
     const content=templates[template||'blank']||templates.blank;
-    db.runSync('INSERT INTO notes (id,course_id,title,content,template,updated_at) VALUES (?,?,?,?,?,?)',[id,courseId,title,content,template||'blank',now]);
+    db.runSync('INSERT INTO notes (id,course_id,title,content,template,updated_at) VALUES (?,?,?,?,?,?)',[id,courseId,encrypt(title),encrypt(content),template||'blank',now]);
     db.runSync('INSERT INTO course_files (id,course_id,name,uri,type,size,added_at) VALUES (?,?,?,?,?,?,?)',[fileId,courseId,title,id,'note',null,now]);
     const note:Note={id,courseId,title,content,template:template||'blank',updatedAt:now};
     dispatch({type:'ADD_NOTE',payload:{note,file:{id:fileId,courseId,name:title,uri:id,type:'note',addedAt:now}}});
@@ -376,7 +486,7 @@ export function AppProvider({children}:{children:React.ReactNode}) {
 
   const updateNote = useCallback((id:string,patch:Partial<Pick<Note,'title'|'content'|'template'>>)=>{
     const now=Date.now();
-    db.runSync('UPDATE notes SET title=COALESCE(?,title),content=COALESCE(?,content),template=COALESCE(?,template),updated_at=? WHERE id=?',[patch.title??null,patch.content??null,patch.template??null,now,id]);
+    db.runSync('UPDATE notes SET title=COALESCE(?,title),content=COALESCE(?,content),template=COALESCE(?,template),updated_at=? WHERE id=?',[patch.title?encrypt(patch.title):null,patch.content?encrypt(patch.content):null,patch.template??null,now,id]);
     if(patch.title)db.runSync('UPDATE course_files SET name=? WHERE uri=? AND type="note"',[patch.title,id]);
     dispatch({type:'UPDATE_NOTE',payload:{id,patch}});
   },[]);
@@ -391,7 +501,7 @@ export function AppProvider({children}:{children:React.ReactNode}) {
 
   const addTodo = useCallback((courseId:string,title:string,priority:Priority='medium',deadline?:number)=>{
     const id=uuid(),now=Date.now();
-    db.runSync('INSERT INTO todos (id,course_id,title,done,deadline,priority,created_at) VALUES (?,?,?,0,?,?,?)',[id,courseId,title,deadline??null,priority,now]);
+    db.runSync('INSERT INTO todos (id,course_id,title,done,deadline,priority,created_at) VALUES (?,?,?,0,?,?,?)',[id,courseId,encrypt(title),deadline??null,priority,now]);
     dispatch({type:'ADD_TODO',payload:{id,courseId,title,done:false,priority,deadline,createdAt:now}});
   },[]);
 
@@ -404,7 +514,7 @@ export function AppProvider({children}:{children:React.ReactNode}) {
 
   const updateTodo = useCallback((id:string,patch:Partial<Omit<TodoItem,'id'|'courseId'|'createdAt'>>)=>{
     db.runSync('UPDATE todos SET title=COALESCE(?,title),done=COALESCE(?,done),deadline=COALESCE(?,deadline),priority=COALESCE(?,priority) WHERE id=?',
-      [patch.title??null,patch.done!==undefined?(patch.done?1:0):null,patch.deadline??null,patch.priority??null,id]);
+      [patch.title?encrypt(patch.title):null,patch.done!==undefined?(patch.done?1:0):null,patch.deadline??null,patch.priority??null,id]);
     dispatch({type:'UPDATE_TODO',payload:{id,patch}});
   },[]);
 
@@ -436,14 +546,34 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     dispatch({type:'TOGGLE_STEP',payload:{setId,stepId}});
   },[]);
 
-  const deleteStudySet = useCallback((id:string)=>{db.runSync('DELETE FROM study_sets WHERE id=?',[id]);dispatch({type:'DELETE_STUDY_SET',payload:id});},[]);
+  const deleteStudySet = useCallback((id:string)=>{
+    const set = state.studySets.find(s=>s.id===id);
+    if(set) moveToTrash('studySet', set.title, set);
+    db.runSync('DELETE FROM study_sets WHERE id=?',[id]);
+    dispatch({type:'DELETE_STUDY_SET',payload:id});
+  },[state.studySets, moveToTrash]);
   const addLink = useCallback((courseId:string,title:string,url:string)=>{const id=uuid(),now=Date.now();db.runSync('INSERT INTO links (id,course_id,title,url,added_at) VALUES (?,?,?,?,?)',[id,courseId,title,url,now]);dispatch({type:'ADD_LINK',payload:{id,courseId,title,url,addedAt:now}});},[]);
-  const deleteLink = useCallback((id:string)=>{db.runSync('DELETE FROM links WHERE id=?',[id]);dispatch({type:'DELETE_LINK',payload:id});},[]);
+  const deleteLink = useCallback((id:string)=>{
+    const link = state.links.find(l=>l.id===id);
+    if(link) moveToTrash('link', link.title, link);
+    db.runSync('DELETE FROM links WHERE id=?',[id]);
+    dispatch({type:'DELETE_LINK',payload:id});
+  },[state.links, moveToTrash]);
   const addBookmark = useCallback((courseId:string,title:string,url:string,note?:string)=>{const id=uuid(),now=Date.now();db.runSync('INSERT INTO bookmarks (id,course_id,title,url,note,added_at) VALUES (?,?,?,?,?,?)',[id,courseId,title,url,note??null,now]);dispatch({type:'ADD_BOOKMARK',payload:{id,courseId,title,url,note,addedAt:now}});},[]);
-  const deleteBookmark = useCallback((id:string)=>{db.runSync('DELETE FROM bookmarks WHERE id=?',[id]);dispatch({type:'DELETE_BOOKMARK',payload:id});},[]);
+  const deleteBookmark = useCallback((id:string)=>{
+    const b = state.bookmarks.find(b=>b.id===id);
+    if(b) moveToTrash('bookmark', b.title, b);
+    db.runSync('DELETE FROM bookmarks WHERE id=?',[id]);
+    dispatch({type:'DELETE_BOOKMARK',payload:id});
+  },[state.bookmarks, moveToTrash]);
   const addGrade = useCallback((courseId:string,label:string,score:number,maxScore:number,weight:number)=>{const id=uuid(),now=Date.now();db.runSync('INSERT INTO grades (id,course_id,label,score,max_score,weight,created_at) VALUES (?,?,?,?,?,?,?)',[id,courseId,label,score,maxScore,weight,now]);dispatch({type:'ADD_GRADE',payload:{id,courseId,label,score,maxScore,weight,createdAt:now}});},[]);
   const updateGrade = useCallback((id:string,patch:Partial<GradeEntry>)=>{db.runSync('UPDATE grades SET label=COALESCE(?,label),score=COALESCE(?,score),max_score=COALESCE(?,max_score),weight=COALESCE(?,weight) WHERE id=?',[patch.label??null,patch.score??null,patch.maxScore??null,patch.weight??null,id]);dispatch({type:'UPDATE_GRADE',payload:{id,patch}});},[]);
-  const deleteGrade = useCallback((id:string)=>{db.runSync('DELETE FROM grades WHERE id=?',[id]);dispatch({type:'DELETE_GRADE',payload:id});},[]);
+  const deleteGrade = useCallback((id:string)=>{
+    const g = state.grades.find(g=>g.id===id);
+    if(g) moveToTrash('grade', g.label, g);
+    db.runSync('DELETE FROM grades WHERE id=?',[id]);
+    dispatch({type:'DELETE_GRADE',payload:id});
+  },[state.grades, moveToTrash]);
 
   const addExam = useCallback((courseId:string,title:string,date:number,location?:string,notes?:string):Exam=>{
     const id=uuid(),now=Date.now();
@@ -457,7 +587,12 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     dispatch({type:'UPDATE_EXAM',payload:{id,patch}});
   },[]);
 
-  const deleteExam = useCallback((id:string)=>{db.runSync('DELETE FROM exams WHERE id=?',[id]);dispatch({type:'DELETE_EXAM',payload:id});},[]);
+  const deleteExam = useCallback((id:string)=>{
+    const e = state.exams.find(e=>e.id===id);
+    if(e) moveToTrash('exam', e.title, e);
+    db.runSync('DELETE FROM exams WHERE id=?',[id]);
+    dispatch({type:'DELETE_EXAM',payload:id});
+  },[state.exams, moveToTrash]);
 
   const addPomodoro = useCallback((duration:number,courseId?:string)=>{
     const id=uuid(),now=Date.now();
@@ -467,13 +602,13 @@ export function AppProvider({children}:{children:React.ReactNode}) {
 
   const addStickyNote = useCallback((content:string,color:string)=>{
     const id=uuid(),now=Date.now();
-    try{db.runSync('INSERT INTO sticky_notes (id,content,color,created_at,updated_at) VALUES (?,?,?,?,?)',[id,content,color,now,now]);}catch(_){}
+    try{db.runSync('INSERT INTO sticky_notes (id,content,color,created_at,updated_at) VALUES (?,?,?,?,?)',[id,encrypt(content),color,now,now]);}catch(_){}
     dispatch({type:'ADD_STICKY',payload:{id,content,color,createdAt:now,updatedAt:now}});
   },[]);
 
   const updateStickyNote = useCallback((id:string,content:string,color:string)=>{
     const now=Date.now();
-    try{db.runSync('UPDATE sticky_notes SET content=?,color=?,updated_at=? WHERE id=?',[content,color,now,id]);}catch(_){}
+    try{db.runSync('UPDATE sticky_notes SET content=?,color=?,updated_at=? WHERE id=?',[encrypt(content),color,now,id]);}catch(_){}
     dispatch({type:'UPDATE_STICKY',payload:{id,content,color}});
   },[]);
 
@@ -515,78 +650,112 @@ export function AppProvider({children}:{children:React.ReactNode}) {
   },[]);
 
 
-  const exportBackup = useCallback(async(password?:string):Promise<string>=>{
-    const data={
-      exportedAt:new Date().toISOString(),
-      isEncrypted: !!password,
-      courses:db.getAllSync('SELECT * FROM courses'),
-      files:db.getAllSync('SELECT * FROM course_files'),
-      notes:db.getAllSync('SELECT * FROM notes'),
-      todos:db.getAllSync('SELECT * FROM todos'),
-      studySets:db.getAllSync('SELECT * FROM study_sets'),
-      steps:db.getAllSync('SELECT * FROM study_set_steps'),
-      links:db.getAllSync('SELECT * FROM links'),
-      bookmarks:db.getAllSync('SELECT * FROM bookmarks'),
-      grades:db.getAllSync('SELECT * FROM grades'),
-      exams:db.getAllSync('SELECT * FROM exams'),
-      stickyNotes:db.getAllSync('SELECT * FROM sticky_notes'),
-      settings:db.getAllSync('SELECT * FROM settings'),
-      user_profile:db.getAllSync('SELECT * FROM user_profile'),
-    };
-    const json = JSON.stringify(data);
-    if (password) {
-      return CryptoJS.AES.encrypt(json, password).toString();
-    }
-    return json;
-  },[]);
+  const exportBackup = useCallback(async (password?: string) => {
+    try {
+      const tables = ['user_profile', 'courses', 'files', 'notes', 'todos', 'study_sets', 'study_set_steps', 'links', 'bookmarks', 'grades', 'exams', 'pomodoro_sessions', 'sticky_notes', 'daily_intentions', 'gratitude_entries'];
+      const data: any = {};
+      tables.forEach(t => {
+        try { data[t] = db.getAllSync(`SELECT * FROM ${t}`); } catch(_) { data[t] = []; }
+      });
 
-  const importBackup = useCallback((payload:string, password?:string):boolean=>{
-    try{
-      let json = payload;
-      // If payload doesn't look like JSON, try to decrypt it
-      if (!payload.trim().startsWith('{')) {
-        if (!password) return false; // Needs password to even try
+      const json = JSON.stringify(data);
+      const fileName = `studynest_backup_${Date.now()}.json`;
+      const filePath = FileSystem.cacheDirectory + fileName;
+
+      const exportObj = {
+        version: 1,
+        timestamp: Date.now(),
+        isEncrypted: !!password,
+        data: password ? CryptoJS.AES.encrypt(json, password).toString() : data
+      };
+
+      await FileSystem.writeAsStringAsync(filePath, JSON.stringify(exportObj));
+      await Sharing.shareAsync(filePath);
+      return true;
+    } catch (e) {
+      console.error('Export failed', e);
+      return false; 
+    }
+  }, []);
+
+  const importBackup = useCallback(async (password?: string) => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({ type: 'application/json' });
+      if (res.canceled) return false;
+
+      const content = await FileSystem.readAsStringAsync(res.assets[0].uri);
+      const data = JSON.parse(content);
+
+      if (data.isEncrypted && !password) throw new Error('PASSWORD_REQUIRED');
+
+      let payload = data.data;
+      if (data.isEncrypted && password) {
         try {
-          const bytes = CryptoJS.AES.decrypt(payload, password);
-          json = bytes.toString(CryptoJS.enc.Utf8);
-          if (!json) return false;
-        } catch(e) { return false; }
+          const bytes = CryptoJS.AES.decrypt(data.data, password);
+          const decryptedJson = bytes.toString(CryptoJS.enc.Utf8);
+          if (!decryptedJson) throw new Error('WRONG_PASSWORD');
+          payload = JSON.parse(decryptedJson);
+        } catch {
+          throw new Error('WRONG_PASSWORD');
+        }
       }
 
-      const data=JSON.parse(json);
-      // Double check decrypted data has expected field or structure
-      if (data.isEncrypted && !password) return false;
-
-      db.withTransactionSync(()=>{
-        if(data.user_profile) data.user_profile.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO user_profile VALUES (?,?,?,?,?,?,?,?,?)',[r.id,r.name,r.email,r.university,r.major,r.year,r.avatar_emoji,r.avatar_bg,r.id_card_visible]);}catch(_){} });
-        if(data.courses)    data.courses.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO courses VALUES (?,?,?,?,?,?,?)',[r.id,r.name,r.icon,r.color,r.archived??0,r.created_at,r.updated_at]);}catch(_){} });
-        if(data.notes)      data.notes.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO notes VALUES (?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.content,r.template??'blank',r.updated_at]);}catch(_){} });
-        if(data.todos)      data.todos.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO todos VALUES (?,?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.done,r.deadline,r.priority,r.created_at]);}catch(_){} });
-        if(data.studySets)  data.studySets.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO study_sets VALUES (?,?,?,?)',[r.id,r.course_id,r.title,r.created_at]);}catch(_){} });
-        if(data.steps)      data.steps.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO study_set_steps VALUES (?,?,?,?,?)',[r.id,r.set_id,r.label,r.done,r.position]);}catch(_){} });
-        if(data.grades)     data.grades.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO grades VALUES (?,?,?,?,?,?,?)',[r.id,r.course_id,r.label,r.score,r.max_score,r.weight,r.created_at]);}catch(_){} });
-        if(data.exams)      data.exams.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO exams VALUES (?,?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.date,r.location,r.notes,r.created_at]);}catch(_){} });
-        if(data.links)      data.links.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO links VALUES (?,?,?,?,?)',[r.id,r.course_id,r.title,r.url,r.added_at]);}catch(_){} });
-        if(data.bookmarks)  data.bookmarks.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO bookmarks VALUES (?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.url,r.note,r.added_at]);}catch(_){} });
-        if(data.stickyNotes)data.stickyNotes.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO sticky_notes VALUES (?,?,?,?,?)',[r.id,r.content,r.color,r.created_at,r.updated_at]);}catch(_){} });
+      db.withTransactionSync(() => {
+        if (payload.user_profile) payload.user_profile.forEach((r: any) => {
+          try {
+            db.runSync(`INSERT OR REPLACE INTO user_profile (id,name,email,university,major,year,avatar_emoji,avatar_bg,id_card_visible,achievements,avatar_uri,student_id,phone,birth_date) 
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, 
+              [r.id, r.name, r.email, r.university, r.major, r.year, r.avatar_emoji, r.avatar_bg, r.id_card_visible, r.achievements, r.avatar_uri, r.student_id, r.phone, r.birth_date]);
+          } catch (_) {}
+        });
+        if (payload.courses)    payload.courses.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO courses VALUES (?,?,?,?,?,?,?)',[r.id,r.name,r.icon,r.color,r.archived??0,r.created_at,r.updated_at]);}catch(_){} });
+        if (payload.notes)      payload.notes.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO notes VALUES (?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.content,r.template??'blank',r.updated_at]);}catch(_){} });
+        if (payload.todos)      payload.todos.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO todos VALUES (?,?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.done,r.deadline,r.priority,r.created_at]);}catch(_){} });
+        if (payload.files)      payload.files.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO files VALUES (?,?,?,?,?,?,?)',[r.id,r.course_id,r.name,r.uri,r.type,r.size,r.added_at]);}catch(_){} });
+        if (payload.study_sets) payload.study_sets.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO study_sets VALUES (?,?,?,?,?)',[r.id,r.course_id,r.title,r.description,r.created_at]);}catch(_){} });
+        if (payload.study_set_steps) payload.study_set_steps.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO study_set_steps VALUES (?,?,?,?,?)',[r.id,r.set_id,r.question,r.answer,r.order_num]);}catch(_){} });
+        if (payload.links)      payload.links.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO links VALUES (?,?,?,?,?)',[r.id,r.course_id,r.title,r.url,r.added_at]);}catch(_){} });
+        if (payload.bookmarks)  payload.bookmarks.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO bookmarks VALUES (?,?,?,?)',[r.id,r.title,r.url,r.added_at]);}catch(_){} });
+        if (payload.grades)     payload.grades.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO grades VALUES (?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.grade,r.weight,r.date]);}catch(_){} });
+        if (payload.exams)      payload.exams.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO exams VALUES (?,?,?,?,?,?)',[r.id,r.course_id,r.title,r.date,r.location,r.reminder_id]);}catch(_){} });
+        if (payload.pomodoro_sessions) payload.pomodoro_sessions.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO pomodoro_sessions VALUES (?,?,?,?,?)',[r.id,r.course_id,r.duration_min,r.completed_at,r.type]);}catch(_){} });
+        if (payload.sticky_notes) payload.sticky_notes.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO sticky_notes VALUES (?,?,?,?,?)',[r.id,r.content,r.color,r.x,r.y]);}catch(_){} });
+        if (payload.daily_intentions) payload.daily_intentions.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO daily_intentions VALUES (?,?,?,?)',[r.id,r.content,r.done,r.date]);}catch(_){} });
+        if (payload.gratitude_entries) payload.gratitude_entries.forEach((r:any)=>{ try{db.runSync('INSERT OR REPLACE INTO gratitude_entries VALUES (?,?,?)',[r.id,r.content,r.date]);}catch(_){} });
       });
+
       loadAll();
       return true;
-    }catch(e){
-      console.error('Import failed',e);
+    } catch (e: any) {
+      if (e.message === 'PASSWORD_REQUIRED' || e.message === 'WRONG_PASSWORD') throw e;
+      console.error('Import failed', e);
       return false;
     }
-  },[loadAll]);
+  }, [loadAll]);
 
   return (
-    <AppContext.Provider value={{state,loadAll,addProfile,updateProfile,deleteProfile,addCourse,updateCourse,deleteCourse,archiveCourse,addFile,deleteFile,renameFile,addNote,updateNote,deleteNote,addTodo,toggleTodo,updateTodo,deleteTodo,addStudySet,updateStudySet,toggleStep,deleteStudySet,addLink,deleteLink,addBookmark,deleteBookmark,addGrade,updateGrade,deleteGrade,addExam,updateExam,deleteExam,addPomodoro,addStickyNote,updateStickyNote,deleteStickyNote,setDailyIntention,addGratitude,deleteGratitude,updateStreak,moveToTrash,restoreFromTrash,deleteFromTrash,addAchievement,removeAchievement,exportBackup,importBackup}}>
+    <AppContext.Provider value={{
+      state, loadAll, addProfile, updateProfile, deleteProfile,
+      addCourse, updateCourse, deleteCourse, archiveCourse,
+      addFile, deleteFile, renameFile, addNote, updateNote, deleteNote,
+      addTodo, toggleTodo, updateTodo, deleteTodo,
+      addStudySet, updateStudySet, toggleStep, deleteStudySet,
+      addLink, deleteLink, addBookmark, deleteBookmark,
+      addGrade, updateGrade, deleteGrade,
+      addExam, updateExam, deleteExam,
+      addPomodoro, addStickyNote, updateStickyNote, deleteStickyNote,
+      setDailyIntention, addGratitude, deleteGratitude, updateStreak,
+      moveToTrash, restoreFromTrash, deleteFromTrash,
+      addAchievement, removeAchievement,
+      exportBackup, importBackup
+    }}>
       {children}
     </AppContext.Provider>
   );
 }
 
-export function useApp():AppContextValue{
-  const ctx=useContext(AppContext);
-  if(!ctx)throw new Error('useApp must be used within AppProvider');
+export function useApp(): AppContextValue {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within AppProvider');
   return ctx;
 }

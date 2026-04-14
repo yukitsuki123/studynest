@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight, Moon, Sunset, Type, ChevronLeft, ChevronRight, Zap, Move, Check, Sliders } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
@@ -14,6 +14,7 @@ import { ThemeColors } from '../../../constants/types';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { TranslationKey } from '../../../constants/translations';
+import { ColorPicker } from '../../../components/ui/ColorPicker';
 
 const FONTS = [
   { id:'lora',        label:'Lora',        description:'Classic warm serif',       preview:'Lora_600SemiBold' },
@@ -35,8 +36,8 @@ function Header({ title }: { title: string }) {
   const router = useRouter();
   return (
     <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',paddingHorizontal:16,paddingVertical:12 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
-        <Feather name={isRTL?"arrow-right":"arrow-left"} size={20} color={tColor.text} />
+      <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
+        {isRTL ? <ArrowRight size={20} color={tColor.text} /> : <ArrowLeft size={20} color={tColor.text} />}
       </TouchableOpacity>
       <Txt variant="display" size={20} style={{ marginLeft:isRTL?0:16, marginRight:isRTL?16:0 }}>{title}</Txt>
     </View>
@@ -53,11 +54,53 @@ export default function AppearanceSettings() {
   const tColor = useTheme();
   const { 
     theme, isDark, autoDark, fontFamily, themeMode, animations, primaryColor, t, isRTL, customPalette,
-    setTheme, toggleDark, setAutoDark, setFontFamily, setThemeMode, setAnimations, setPrimaryColor, setCustomColor
+    fontSizeMultiplier, haptics,
+    setTheme, toggleDark, setAutoDark, setFontFamily, setThemeMode, setAnimations, setPrimaryColor, setCustomColor,
+    setFontSizeMultiplier, setHaptics
   } = useSettings();
   
   const [showFonts, setShowFonts] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
+  const [activePickerKey, setActivePickerKey] = useState<keyof ThemeColors | null>(null);
+
+  const hexToHsl = (hex: string) => {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+      r = parseInt(hex[1] + hex[1], 16);
+      g = parseInt(hex[2] + hex[2], 16);
+      b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+      r = parseInt(hex.substring(1, 3), 16);
+      g = parseInt(hex.substring(3, 5), 16);
+      b = parseInt(hex.substring(5, 7), 16);
+    }
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s, l = (max + min) / 2;
+    if (max === min) h = s = 0;
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch(max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+  };
+
+  const hslToHex = (h: number, s: number, l: number) => {
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+  };
 
   return (
     <SafeAreaView style={{ flex:1,backgroundColor:tColor.bg }} edges={['top']}>
@@ -69,14 +112,14 @@ export default function AppearanceSettings() {
         <View style={{ marginHorizontal:20,backgroundColor:tColor.card,borderRadius:16,borderWidth:1,borderColor:tColor.border2,overflow:'hidden' }}>
           <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',padding:16,borderBottomWidth:1,borderBottomColor:tColor.border2 }}>
             <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
-              <Feather name="moon" size={16} color={tColor.accent} />
+              <Moon size={16} color={tColor.accent} />
             </View>
             <Txt variant="body" style={{ flex:1,textAlign:isRTL?'right':'left' }}>{t('dark_mode')}</Txt>
             <Toggle value={isDark} onToggle={toggleDark} />
           </View>
           <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',padding:16 }}>
             <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
-              <Feather name="sunset" size={16} color={tColor.accent} />
+              <Sunset size={16} color={tColor.accent} />
             </View>
             <Txt variant="body" style={{ flex:1,textAlign:isRTL?'right':'left' }}>{t('auto_dark')}</Txt>
             <Toggle value={autoDark} onToggle={() => setAutoDark(!autoDark)} />
@@ -87,22 +130,50 @@ export default function AppearanceSettings() {
         <TouchableOpacity onPress={() => setShowFonts(true)} activeOpacity={0.7}
           style={{ marginHorizontal:20,backgroundColor:tColor.card,borderRadius:16,borderWidth:1,borderColor:tColor.border2,padding:16,flexDirection:isRTL?'row-reverse':'row',alignItems:'center' }}>
           <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
-            <Feather name="type" size={16} color={tColor.accent} />
+            <Type size={16} color={tColor.accent} />
           </View>
           <View style={{ flex:1 }}>
             <Txt variant="body" style={{ textAlign:isRTL?'right':'left' }}>{t('font_style')}</Txt>
             <Txt variant="bodyItalic" size={12} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{FONTS.find(f=>f.id===fontFamily)?.label??'Lora'}</Txt>
           </View>
-          <Feather name={isRTL?"chevron-left":"chevron-right"} size={16} color={tColor.text3} />
+          {isRTL ? <ChevronLeft size={16} color={tColor.text3} /> : <ChevronRight size={16} color={tColor.text3} />}
         </TouchableOpacity>
 
         <SectionTitle label={t('animations')} />
-        <View style={{ marginHorizontal:20,backgroundColor:tColor.card,borderRadius:16,borderWidth:1,borderColor:tColor.border2,padding:16,flexDirection:isRTL?'row-reverse':'row',alignItems:'center' }}>
-          <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
-            <Feather name="zap" size={16} color={tColor.accent} />
+        <View style={{ marginHorizontal:20,backgroundColor:tColor.card,borderRadius:16,borderWidth:1,borderColor:tColor.border2,overflow:'hidden' }}>
+          <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',padding:16,borderBottomWidth:1,borderBottomColor:tColor.border2 }}>
+            <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
+              <Zap size={16} color={tColor.accent} />
+            </View>
+            <Txt variant="body" style={{ flex:1,textAlign:isRTL?'right':'left' }}>{t('animations')}</Txt>
+            <Toggle value={animations} onToggle={() => setAnimations(!animations)} />
           </View>
-          <Txt variant="body" style={{ flex:1,textAlign:isRTL?'right':'left' }}>{t('animations')}</Txt>
-          <Toggle value={animations} onToggle={() => setAnimations(!animations)} />
+          <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',padding:16 }}>
+            <View style={{ width:32,height:32,borderRadius:8,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center',marginLeft:isRTL?12:0,marginRight:isRTL?0:12 }}>
+              <Move size={16} color={tColor.accent} />
+            </View>
+            <Txt variant="body" style={{ flex:1,textAlign:isRTL?'right':'left' }}>{t('haptics' as any) || 'Haptic Feedback'}</Txt>
+            <Toggle value={haptics} onToggle={() => setHaptics(!haptics)} />
+          </View>
+        </View>
+
+        <SectionTitle label={t('font_size' as any) || 'Font Size'} />
+        <View style={{ marginHorizontal:20,backgroundColor:tColor.card,borderRadius:16,borderWidth:1,borderColor:tColor.border2,padding:16 }}>
+          <View style={{ flexDirection:'row', justifyContent:'space-between', marginBottom:12 }}>
+            <Txt variant="mono" size={10} color="tertiary">A</Txt>
+            <Txt variant="mono" size={14} color="tertiary">A</Txt>
+          </View>
+          <View style={{ flexDirection:'row', gap:4, height:40, alignItems:'center' }}>
+            {[0.8, 0.9, 1.0, 1.1, 1.2].map(val => (
+                <TouchableOpacity key={val} onPress={() => setFontSizeMultiplier(val)}
+                  style={{ flex:1, height:4, backgroundColor: fontSizeMultiplier === val ? tColor.accent : tColor.bg2, borderRadius:2, position:'relative', alignItems:'center', justifyContent:'center' }}>
+                  <View style={{ width:12, height:12, borderRadius:6, backgroundColor: fontSizeMultiplier === val ? tColor.accent : 'transparent', borderWidth: fontSizeMultiplier === val ? 0 : 1, borderColor: tColor.border }} />
+                </TouchableOpacity>
+            ))}
+          </View>
+          <Txt variant="bodyItalic" size={11} color="tertiary" style={{ marginTop:8, textAlign:'center' }}>
+            {Math.round(fontSizeMultiplier * 100)}% {t('font_size_scale' as any) || 'scaling'}
+          </Txt>
         </View>
 
         <View style={{ flexDirection:isRTL?'row-reverse':'row', justifyContent:'space-between', alignItems:'center', marginTop:14 }}>
@@ -133,7 +204,7 @@ export default function AppearanceSettings() {
                     <View style={{ flex:1 }}>
                       <Txt variant="bodySemi" size={13}>{meta.label}</Txt>
                     </View>
-                    {active && <Feather name="check" size={14} color={tColor.accent} />}
+                    {active && <Check size={14} color={tColor.accent} />}
                   </TouchableOpacity>
                 );
               })}
@@ -145,14 +216,14 @@ export default function AppearanceSettings() {
                 {BRAND_COLORS.map(c => (
                   <TouchableOpacity key={c} onPress={() => setPrimaryColor(c)}
                     style={{ width:42, height:42, borderRadius:21, backgroundColor:c, borderWidth:3, borderColor: primaryColor === c ? tColor.text : 'transparent', alignItems:'center', justifyContent:'center' }}>
-                    {primaryColor === c && <Feather name="check" size={20} color="#fff" />}
+                    {primaryColor === c && <Check size={20} color="#fff" />}
                   </TouchableOpacity>
                 ))}
               </View>
 
               <TouchableOpacity onPress={() => setShowCustom(true)}
                 style={{ marginTop:24, paddingVertical:14, borderRadius:12, backgroundColor:tColor.bg2, borderWidth:1, borderColor:tColor.border, alignItems:'center', justifyContent:'center', flexDirection:isRTL?'row-reverse':'row', gap:8 }}>
-                <Feather name="sliders" size={16} color={tColor.accent} />
+                <Sliders size={16} color={tColor.accent} />
                 <Txt variant="mono" size={11} color="accent" style={{ textTransform:'uppercase', letterSpacing:0.5 }}>{t('edit_custom_colors')}</Txt>
               </TouchableOpacity>
             </View>
@@ -175,45 +246,56 @@ export default function AppearanceSettings() {
                 <Txt variant="bodySemi" size={16} style={{ textAlign:isRTL?'right':'left' }}>{f.label}</Txt>
                 <Txt variant="bodyItalic" size={13} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{f.description}</Txt>
               </View>
-              {active && <View style={{ width:26,height:26,borderRadius:13,backgroundColor:tColor.accent,alignItems:'center',justifyContent:'center' }}><Feather name="check" size={14} color="#fff" /></View>}
+              {active && <View style={{ width:26,height:26,borderRadius:13,backgroundColor:tColor.accent,alignItems:'center',justifyContent:'center' }}><Check size={14} color="#fff" /></View>}
             </TouchableOpacity>
           );
         })}
       </BottomSheet>
 
       {/* Custom Color Palette Editor */}
-      <BottomSheet visible={showCustom} onClose={() => setShowCustom(false)} title={t('edit_custom_colors')} scrollable>
-        <Txt variant="bodyItalic" size={12} color="tertiary" style={{ marginBottom:20 }}>Overrides the generated branding colors. Enter valid Hex codes (e.g. #FFFFFF).</Txt>
-        {(Object.keys(tColor) as (keyof ThemeColors)[]).map((key) => {
-          // Filter out complex or non-color keys if any exist, but ThemeColors is all strings usually
-          if (typeof tColor[key] !== 'string') return null;
-          
-          const labelKey = `${key}_color_label` as TranslationKey;
-          const label = t(labelKey);
-          
-          return (
-            <View key={key} style={{ marginBottom:16 }}>
-              <View style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:10, marginBottom:6 }}>
-                <View style={{ width:20, height:20, borderRadius:10, backgroundColor: tColor[key], borderWidth:1, borderColor:tColor.border }} />
-                <Txt variant="mono" size={11} color="secondary" style={{ flex:1, textAlign:isRTL?'right':'left' }}>{label}</Txt>
-                <Txt variant="mono" size={9} color="tertiary">[{key}]</Txt>
-              </View>
-              <Input
-                value={customPalette[key] || tColor[key]}
-                onChangeText={(val) => {
-                  if (val.startsWith('#') && (val.length === 4 || val.length === 7 || val.length === 9)) {
-                    setCustomColor(key, val);
-                  }
-                }}
-                placeholder="#000000"
-                style={{ height:40, fontSize:13 }}
-              />
-            </View>
-          );
-        })}
-        <Button label="Done" onPress={() => setShowCustom(false)} style={{ marginTop:10 }} />
+      <BottomSheet visible={showCustom} onClose={() => { setShowCustom(false); setActivePickerKey(null); }} title={t('edit_custom_colors')} scrollable>
+        {activePickerKey ? (
+          <View>
+            <TouchableOpacity onPress={() => setActivePickerKey(null)} style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:8, marginBottom:16 }}>
+              {isRTL ? <ChevronRight size={14} color={tColor.text3} /> : <ChevronLeft size={14} color={tColor.text3} />}
+              <Txt variant="mono" size={11} color="tertiary">BACK TO LIST</Txt>
+            </TouchableOpacity>
+            
+            <ColorPicker 
+              label={`Edit ${activePickerKey}`}
+              initialHue={hexToHsl(customPalette[activePickerKey!] || tColor[activePickerKey!]).h}
+              initialSat={hexToHsl(customPalette[activePickerKey!] || tColor[activePickerKey!]).s}
+              initialLum={hexToHsl(customPalette[activePickerKey!] || tColor[activePickerKey!]).l}
+              onColorChange={(h, s, l) => {
+                setCustomColor(activePickerKey!, hslToHex(h, s, l));
+              }}
+            />
+            <Button label="Done" onPress={() => setActivePickerKey(null)} style={{ marginTop:20 }} />
+          </View>
+        ) : (
+          <View>
+            <Txt variant="bodyItalic" size={12} color="tertiary" style={{ marginBottom:20 }}>Tap a color to refine it using the visual picker.</Txt>
+            {(Object.keys(tColor) as (keyof ThemeColors)[]).map((key) => {
+              if (typeof tColor[key] !== 'string') return null;
+              const label = t(`${key}_color_label` as TranslationKey);
+              const colorValue = customPalette[key] || tColor[key];
+              
+              return (
+                <TouchableOpacity key={key} onPress={() => setActivePickerKey(key)}
+                  style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:12, marginBottom:16, backgroundColor:tColor.bg2, padding:12, borderRadius:12, borderWidth:1, borderColor:tColor.border2 }}>
+                  <View style={{ width:32, height:32, borderRadius:16, backgroundColor: colorValue, borderWidth:1, borderColor:tColor.border }} />
+                  <View style={{ flex:1 }}>
+                    <Txt variant="bodySemi" size={14} style={{ textAlign:isRTL?'right':'left' }}>{label}</Txt>
+                    <Txt variant="mono" size={11} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{colorValue}</Txt>
+                  </View>
+                  {isRTL ? <ChevronLeft size={16} color={tColor.text3} /> : <ChevronRight size={16} color={tColor.text3} />}
+                </TouchableOpacity>
+              );
+            })}
+            <Button label="Close" onPress={() => setShowCustom(false)} style={{ marginTop:14 }} />
+          </View>
+        )}
       </BottomSheet>
-
     </SafeAreaView>
   );
 }

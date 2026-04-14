@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight, CreditCard } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
@@ -14,8 +14,8 @@ function Header({ title }: { title: string }) {
   const router = useRouter();
   return (
     <View style={{ flexDirection:isRTL?'row-reverse':'row',alignItems:'center',paddingHorizontal:16,paddingVertical:12 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
-        <Feather name={isRTL?"arrow-right":"arrow-left"} size={20} color={tColor.text} />
+      <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={{ width:40,height:40,borderRadius:20,backgroundColor:tColor.bg2,alignItems:'center',justifyContent:'center' }}>
+        {isRTL ? <ArrowRight size={20} color={tColor.text} /> : <ArrowLeft size={20} color={tColor.text} />}
       </TouchableOpacity>
       <Txt variant="display" size={20} style={{ marginLeft:isRTL?0:16, marginRight:isRTL?16:0 }}>{title}</Txt>
     </View>
@@ -45,7 +45,7 @@ export default function ProfileSettings() {
           
           <TouchableOpacity onPress={() => router.push('/idcard' as any)}
             style={{ marginTop:16, backgroundColor:tColor.bg2, borderWidth:1, borderColor:tColor.border, borderRadius:20, paddingHorizontal:16, paddingVertical:8, flexDirection:isRTL?'row-reverse':'row', alignItems:'center', gap:8 }}>
-            <Feather name="credit-card" size={14} color={tColor.accent} />
+            <CreditCard size={14} color={tColor.accent} />
             <Txt variant="mono" size={11} color="accent" style={{ textTransform:'uppercase', letterSpacing:1 }}>{t('manage_id_cards')}</Txt>
           </TouchableOpacity>
         </View>
@@ -66,21 +66,10 @@ export default function ProfileSettings() {
           </View>
         </View>
 
-        <View style={{ backgroundColor:tColor.card, borderRadius:16, borderWidth:1, borderColor:tColor.border2, overflow:'hidden' }}>
-          <TouchableOpacity style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', padding:16, borderBottomWidth:1, borderBottomColor:tColor.border2 }}>
-            <View style={{ width:36, height:36, borderRadius:10, backgroundColor:tColor.bg2, alignItems:'center', justifyContent:'center', marginLeft:isRTL?14:0, marginRight:isRTL?0:14 }}>
-              <Feather name="edit-2" size={18} color={tColor.accent} />
-            </View>
-            <Txt variant="bodySemi" size={14} style={{ flex:1, textAlign:isRTL?'right':'left' }}>{t('edit_basic_info')}</Txt>
-            <Feather name={isRTL?"chevron-left":"chevron-right"} size={16} color={tColor.text3} />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection:isRTL?'row-reverse':'row', alignItems:'center', padding:16 }}>
-            <View style={{ width:36, height:36, borderRadius:10, backgroundColor:tColor.bg2, alignItems:'center', justifyContent:'center', marginLeft:isRTL?14:0, marginRight:isRTL?0:14 }}>
-              <Feather name="award" size={18} color={tColor.accent} />
-            </View>
-            <Txt variant="bodySemi" size={14} style={{ flex:1, textAlign:isRTL?'right':'left' }}>{t('achievements')}</Txt>
-            <Feather name={isRTL?"chevron-left":"chevron-right"} size={16} color={tColor.text3} />
-          </TouchableOpacity>
+        <View style={{ backgroundColor:tColor.card, borderRadius:16, borderWidth:1, borderColor:tColor.border2, overflow:'hidden', padding: 20, alignItems: 'center' }}>
+           <Txt variant="bodyItalic" size={13} color="tertiary" style={{ textAlign: 'center' }}>
+             {t('profile_managed_via_id' as any) || 'Your profile information is managed through your Student ID cards.'}
+           </Txt>
         </View>
 
       </ScrollView>

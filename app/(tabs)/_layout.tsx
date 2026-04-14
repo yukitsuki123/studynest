@@ -1,13 +1,11 @@
-import { Feather } from '@expo/vector-icons';
+import { Home, FolderOpen, Calendar, Settings } from 'lucide-react-native';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/useTheme';
 
-function TabIcon({ name, color, size }: { name: keyof typeof Feather.glyphMap; color: string; size: number }) {
-  return <Feather name={name} size={size} color={color} />;
-}
+
 
 export default function TabLayout() {
   const t = useTheme();
@@ -41,14 +39,15 @@ export default function TabLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index"    options={{ title: 'Home',     tabBarIcon: ({ color, size }) => <TabIcon name="home"     color={color} size={size} /> }} />
-      <Tabs.Screen name="courses"  options={{ title: 'Courses',  tabBarIcon: ({ color, size }) => <TabIcon name="folder"   color={color} size={size} /> }} />
-      <Tabs.Screen name="schedule" options={{ title: 'Schedule', tabBarIcon: ({ color, size }) => <TabIcon name="calendar" color={color} size={size} /> }} />
-      <Tabs.Screen name="settings/index" options={{ title: 'Settings', tabBarIcon: ({ color, size }) => <TabIcon name="settings" color={color} size={size} /> }} />
+      <Tabs.Screen name="index"    options={{ title: 'Home',     tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }} />
+      <Tabs.Screen name="courses"  options={{ title: 'Courses',  tabBarIcon: ({ color, size }) => <FolderOpen color={color} size={size} /> }} />
+      <Tabs.Screen name="schedule" options={{ title: 'Schedule', tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
+      <Tabs.Screen name="settings/index" options={{ title: 'Settings', tabBarIcon: ({ color, size }) => <Settings color={color} size={size} /> }} />
       <Tabs.Screen name="settings/profile" options={{ href: null }} />
       <Tabs.Screen name="settings/appearance" options={{ href: null }} />
       <Tabs.Screen name="settings/dashboard" options={{ href: null }} />
-      <Tabs.Screen name="settings/behavior" options={{ href: null }} />
+      <Tabs.Screen name="settings/files" options={{ href: null }} />
+      <Tabs.Screen name="settings/language" options={{ href: null }} />
       <Tabs.Screen name="settings/data" options={{ href: null }} />
       <Tabs.Screen name="settings/about" options={{ href: null }} />
     </Tabs>

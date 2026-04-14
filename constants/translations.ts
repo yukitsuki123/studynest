@@ -1,4 +1,4 @@
-export type TranslationKey = 
+export type TranslationKey =
   | 'home' | 'courses' | 'schedule' | 'settings'
   | 'greeting_morning' | 'greeting_afternoon' | 'greeting_evening' | 'greeting_night'
   | 'todays_intention' | 'quick_stats' | 'upcoming_deadlines' | 'recent_activity' | 'quick_notes' | 'quick_actions'
@@ -19,7 +19,7 @@ export type TranslationKey =
   | 'data_privacy_desc' | 'backup_restore_desc' | 'storage_management_desc' | 'privacy_policy' | 'privacy_policy_desc' | 'encryption' | 'encryption_desc'
   | 'about_studynest' | 'version_info' | 'about_para1' | 'about_para2' | 'about_para3' | 'about_para4' | 'about_para5' | 'our_philosophy' | 'philosophy_desc'
   | 'student_profile' | 'manage_id_cards' | 'academic_stats' | 'tasks_done' | 'day_streak' | 'edit_basic_info' | 'achievements' | 'no_email_set'
-  | 'export_backup' | 'restore_backup' | 'export_backup_desc' | 'restore_backup_desc' | 'warning_restore' | 'pick_json_file' | 'paste_json_directly' | 'exported_at' | 'exporting_wait' | 'restoring_wait' | 'backup_saved' | 'backup_restored_success' | 'invalid_json' | 'read_file_error' | 'current_data'
+  | 'export_backup' | 'restore_backup' | 'export_backup_desc' | 'restore_backup_desc' | 'warning_restore' | 'pick_json_file' | 'paste_json_directly' | 'exported_at' | 'exporting_wait' | 'restoring_wait' | 'backup_saved' | 'backup_restored_success' | 'invalid_json' | 'read_file_error' | 'current_data' | 'select_file_and_restore'
   | 'trash_management' | 'trash_desc' | 'items_in_trash' | 'empty_trash' | 'restore_item' | 'permanent_delete' | 'no_items_trash' | 'delete_all_warning'
   | 'trash_bin' | 'items' | 'empty' | 'trash_empty' | 'delete_permanently' | 'delete_permanently_confirm' | 'restore'
   | 'id_cards' | 'student_id' | 'full_name' | 'email' | 'university' | 'major_field' | 'academic_year' | 'save_changes' | 'delete_card' | 'add_new_id' | 'edit_card' | 'tap_edit_profile' | 'avatar' | 'bg_color' | 'year_label'
@@ -30,7 +30,13 @@ export type TranslationKey =
   | 'course_not_found' | 'go_back' | 'overall_average' | 'assessment_name' | 'score' | 'out_of' | 'weight' | 'priority' | 'low' | 'medium' | 'high' | 'task_title' | 'due_date' | 'set_due_date' | 'delete_file' | 'rename_file' | 'open_file' | 'share' | 'overdue'
   | 'edit' | 'preview' | 'note_title' | 'start_writing' | 'empty_note' | 'tap_edit_to_start' | 'last_saved' | 'unsaved' | 'words' | 'chars' | 'delete_note' | 'delete_note_confirm'
   | 'quiz' | 'known' | 'quiz_complete' | 'restart_quiz' | 'back_to_overview' | 'tap_to_reveal' | 'got_it' | 'skip' | 'marked_complete' | 'start_quiz_mode' | 'test_yourself_hint' | 'left' | 'quiz_result_summary' | 'step_label'
-  | 'take_photo' | 'export_pdf' | 'export_docx' | 'custom_theme' | 'edit_custom_colors' | 'bg_color_label' | 'accent_color_label' | 'text_color_label' | 'card_color_label' | 'text2_color_label' | 'text3_color_label' | 'card2_color_label' | 'bg2_color_label' | 'bg3_color_label' | 'cancel' | 'delete' | 'delete_achievement' | 'delete_achievement_confirm';
+  | 'take_photo' | 'export_pdf' | 'export_docx' | 'custom_theme' | 'edit_custom_colors' | 'bg_color_label' | 'accent_color_label' | 'text_color_label' | 'card_color_label' | 'text2_color_label' | 'text3_color_label' | 'card2_color_label' | 'bg2_color_label' | 'bg3_color_label' | 'cancel' | 'delete' | 'delete_achievement' | 'delete_achievement_confirm'
+  | 'export_failed' | 'export_error' | 'import_failed' | 'import_error' | 'backup_encrypted_notice' | 'wrong_password_notice' | 'backup_password_label' | 'backup_password_placeholder' | 'enter_password'
+  | 'note_not_found' | 'loading' | 'optional' | 'exams'
+  | 'active' | 'inactive' | 'set_as_active' | 'success' | 'active_profile_set'
+  | 'themes' | 'layouts' | 'storage_data_backups' | 'storage_data_desc'
+  | 'trash_backups' | 'files_language'
+  | 'archive' | 'archive_desc' | 'app_language_desc' | 'trash_desc' | 'file_viewer_desc';
 
 export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> = {
   en: {
@@ -110,8 +116,8 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     direction_rtl: 'RTL',
     status_available: 'Available',
     status_in_progress: 'In Progress',
-    data_privacy_desc: 'Your data is stored locally on this device. We do not use any cloud servers. Keeping backups is recommended.',
-    backup_restore_desc: 'Export data to a file or import one',
+    data_privacy_desc: 'Manage personal data and permissions',
+    backup_restore_desc: 'Export data or recover a snapshot',
     storage_management_desc: 'Clean up cached files and trash',
     privacy_policy: 'Privacy Policy',
     privacy_policy_desc: 'StudyNest does not collect, track, or share any of your academic data. Everything stays in your private SQLite database.',
@@ -140,6 +146,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     restore_backup_desc: 'Load data from a previous backup file',
     warning_restore: 'Restoring a backup merges it with your existing data. It does not delete current data first.',
     pick_json_file: 'Pick JSON File from Storage',
+    select_file_and_restore: 'Select File & Restore',
     paste_json_directly: 'Or paste JSON directly',
     exported_at: 'Exported at',
     exporting_wait: 'Exporting...',
@@ -150,7 +157,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     read_file_error: 'Could not read file',
     current_data: 'Current Data',
     trash_management: 'Trash Management',
-    trash_desc: 'Manage items you have recently deleted',
+    trash_desc: 'Recover or permanently delete files',
     items_in_trash: 'Items in Trash',
     empty_trash: 'Empty Trash',
     restore_item: 'Restore',
@@ -284,6 +291,34 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     delete: 'Delete',
     delete_achievement: 'Delete Milestone',
     delete_achievement_confirm: 'Are you sure you want to remove this milestone?',
+    export_failed: 'Export failed.',
+    export_error: 'Export error: {error}',
+    import_failed: 'Import failed.',
+    import_error: 'Import error: {error}',
+    backup_encrypted_notice: 'This backup is encrypted. Please enter the password.',
+    wrong_password_notice: 'Incorrect password. Please try again.',
+    backup_password_label: 'Backup Password',
+    backup_password_placeholder: 'Empty for no encryption',
+    enter_password: 'Enter password',
+    note_not_found: 'Note not found',
+    loading: 'Loading...',
+    optional: 'Optional',
+    exams: 'Exams',
+    active: 'Active',
+    inactive: 'Inactive',
+    set_as_active: 'Set as Active Profile',
+    success: 'Success',
+    active_profile_set: 'This card is now your active profile.',
+    themes: 'Themes',
+    layouts: 'Layouts',
+    storage_data_backups: 'Storage, Data & Backups',
+    storage_data_desc: 'Manage your files, trash, and backups',
+    trash_backups: 'Trash & Backups',
+    files_language: 'Files & Language',
+    archive: 'Archive',
+    archive_desc: "Stored items you've put away",
+    file_viewer_desc: 'Open PDFs, images, and documents',
+    app_language_desc: 'Display and input language',
   },
   ar: {
     home: 'الرئيسية',
@@ -392,6 +427,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     restore_backup_desc: 'تحميل البيانات من ملف نسخة احتياطية سابق',
     warning_restore: 'استعادة النسخة الاحتياطية ستقوم بدمجها مع بياناتك الحالية. لن يتم حذف البيانات الحالية.',
     pick_json_file: 'اختر ملف JSON من التخزين',
+    select_file_and_restore: 'اختر الملف واستعد',
     paste_json_directly: 'أو الصق نص JSON مباشرة',
     exported_at: 'تم التصدير في',
     exporting_wait: 'جارٍ التصدير...',
@@ -402,7 +438,7 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     read_file_error: 'لا يمكن قراءة الملف',
     current_data: 'البيانات الحالية',
     trash_management: 'إدارة المهملات',
-    trash_desc: 'إدارة العناصر التي قمت بحذفها مؤخراً',
+    trash_desc: 'استعادة الملفات أو حذفها نهائياً',
     items_in_trash: 'عناصر في المهملات',
     empty_trash: 'إفراغ المهملات',
     restore_item: 'استعادة',
@@ -536,5 +572,33 @@ export const TRANSLATIONS: Record<'en' | 'ar', Record<TranslationKey, string>> =
     delete: 'حذف',
     delete_achievement: 'حذف الإنجاز',
     delete_achievement_confirm: 'هل أنت متأكد من رغبتك في إزالة هذا الإنجاز؟',
+    export_failed: 'فشل التصدير.',
+    export_error: 'خطأ في التصدير: {error}',
+    import_failed: 'فشل الاستيراد.',
+    import_error: 'خطأ في الاستيراد: {error}',
+    backup_encrypted_notice: 'هذه النسخة مشفرة. يرجى إدخال كلمة المرور.',
+    wrong_password_notice: 'كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.',
+    backup_password_label: 'كلمة مرور النسخة الاحتياطية',
+    backup_password_placeholder: 'اتركه فارغاً إذا لم ترغب في التشفير',
+    enter_password: 'أدخل كلمة المرور',
+    note_not_found: 'الملاحظة غير موجودة',
+    loading: 'جارٍ التحميل...',
+    optional: 'اختياري',
+    exams: 'الامتحانات',
+    active: 'نشط',
+    inactive: 'غير نشط',
+    set_as_active: 'تعيين كملف نشط',
+    success: 'تم بنجاح',
+    active_profile_set: 'تم تعيين هذه البطاقة كملف تعريف نشط حالياً.',
+    themes: 'السمات والتنسيق',
+    layouts: 'تخطيط اللوحة',
+    storage_data_backups: 'التخزين والبيانات والنسخ الاحتياطي',
+    storage_data_desc: 'إدارة الملفات والمهملات والنسخ الاحتياطي',
+    trash_backups: 'المهملات والنسخ الاحتياطي',
+    files_language: 'الملفات واللغة',
+    archive: 'الأرشيف',
+    archive_desc: 'العناصر المحفوظة التي وضعتها جانباً',
+    file_viewer_desc: 'فتح ملفات PDF والصور والمستندات',
+    app_language_desc: 'لغة العرض والإدخال',
   }
 };

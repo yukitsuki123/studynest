@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Check, Book, Calendar } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useApp } from '../../context/AppContext';
 import { TodoItem, Course } from '../../constants/types';
@@ -33,7 +33,7 @@ export function DeadlineCard({ todo, course, onPress }: DeadlineCardProps) {
           borderColor:todo.done?t.accent3:pColor,
           backgroundColor:todo.done?t.accent3:'transparent',
           alignItems:'center', justifyContent:'center' }}>
-        {todo.done && <Feather name="check" size={13} color="#fff" />}
+        {todo.done && <Check size={13} color="#fff" />}
       </TouchableOpacity>
       <View style={{ flex:1, minWidth:0 }}>
         <Txt variant={todo.done?'bodyItalic':'bodySemi'} size={14} numberOfLines={1}
@@ -43,13 +43,13 @@ export function DeadlineCard({ todo, course, onPress }: DeadlineCardProps) {
         <View style={{ flexDirection:'row', alignItems:'center', gap:8, marginTop:3 }}>
           {course && (
             <View style={{ flexDirection:'row', alignItems:'center', gap:4 }}>
-              <Feather name="book" size={10} color={course.color} />
+              <Book size={10} color={course.color} />
               <Txt variant="mono" size={10} style={{ color:course.color }}>{course.name}</Txt>
             </View>
           )}
           {todo.deadline && (
             <View style={{ flexDirection:'row', alignItems:'center', gap:4 }}>
-              <Feather name="calendar" size={10} color={overdue?t.red:urgent?t.accent2:t.text3} />
+              <Calendar size={10} color={overdue?t.red:urgent?t.accent2:t.text3} />
               <Txt variant="mono" size={10} style={{ color:overdue?t.red:urgent?t.accent2:t.text3 }}>
                 {formatDeadline(todo.deadline)}{overdue?' · Overdue':days!==null&&days<=2?` · ${days}d left`:''}
               </Txt>

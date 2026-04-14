@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { ChevronRight, X, Book } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
@@ -55,7 +55,7 @@ export default function WeeklyReportScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: tColor.bg }} edges={['top']}>
       <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: tColor.border }}>
         <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tColor.card, borderWidth: 1, borderColor: tColor.border, alignItems: 'center', justifyContent: 'center' }}>
-          <Feather name={isRTL?"chevron-right":"x"} size={18} color={tColor.text2} />
+          {isRTL ? <ChevronRight size={18} color={tColor.text2} /> : <X size={18} color={tColor.text2} />}
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: isRTL?0:12, marginRight: isRTL?12:0 }}>
           <Txt variant="display" size={20} style={{ textAlign:isRTL?'right':'left' }}>{t('weekly_report')}</Txt>
@@ -99,7 +99,7 @@ export default function WeeklyReportScreen() {
         {courseStats.map(({ course, done, total, gpa, pomosThisWeek }) => (
           <View key={course.id} style={{ backgroundColor: tColor.card, borderRadius: 12, borderWidth: 1, borderLeftWidth: isRTL?1:4, borderRightWidth: isRTL?4:1, borderColor: tColor.border2, borderLeftColor: isRTL?tColor.border2:course.color, borderRightColor: isRTL?course.color:tColor.border2, padding: 14, marginBottom: 10 }}>
             <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <Txt style={{ fontSize: 20 }}>{course.icon}</Txt>
+              <Book size={20} color={tColor.text} />
               <Txt variant="display" size={15} style={{ flex: 1, textAlign:isRTL?'right':'left' }}>{course.name}</Txt>
               {gpa !== null && (
                 <View style={{ backgroundColor: (gpa >= 70 ? tColor.accent3 : gpa >= 50 ? tColor.accent2 : tColor.red) + '22', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 }}>
@@ -129,7 +129,7 @@ export default function WeeklyReportScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Txt variant="bodySemi" size={14} style={{ textAlign:isRTL?'right':'left' }}>{e.title}</Txt>
-                    <Txt variant="bodyItalic" size={12} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}>{course?.icon} {course?.name}</Txt>
+                    <Txt variant="bodyItalic" size={12} color="tertiary" style={{ textAlign:isRTL?'right':'left' }}><Book size={12} color={tColor.text3} style={{ marginBottom: -2 }} /> {course?.name}</Txt>
                     <Txt variant="mono" size={10} style={{ color: days <= 7 ? tColor.red : tColor.text3, marginTop: 4, textAlign:isRTL?'right':'left' }}>{days}{t('days_away')} · {new Date(e.date).toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric', month: 'short' })}</Txt>
                   </View>
                 </View>
