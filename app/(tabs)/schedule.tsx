@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, Modal, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { ChevronLeft, ChevronRight, Calendar, Edit2, X } from 'lucide-react-native';
 import { DeadlineCard } from '../../components/schedule/DeadlineCard';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { Button } from '../../components/ui/Button';
@@ -9,6 +9,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { FAB } from '../../components/ui/FAB';
 import { Input } from '../../components/ui/Input';
 import { Txt } from '../../components/ui/Text';
+import { DynamicIcon } from '../../components/ui/DynamicIcon';
 import { useApp } from '../../context/AppContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -47,11 +48,11 @@ function CalendarPicker({ selectedDate, onSelect, onClose, todos, exams }: {
       {/* Month nav */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
         <TouchableOpacity onPress={prevMonth} style={{ padding: 8 }}>
-          <Feather name="chevron-left" size={20} color={t.text2} />
+          <ChevronLeft size={20} color={t.text2} />
         </TouchableOpacity>
         <Txt variant="display" size={17} style={{ flex: 1, textAlign: 'center' }}>{MONTHS[viewMonth]} {viewYear}</Txt>
         <TouchableOpacity onPress={nextMonth} style={{ padding: 8 }}>
-          <Feather name="chevron-right" size={20} color={t.text2} />
+          <ChevronRight size={20} color={t.text2} />
         </TouchableOpacity>
       </View>
 
@@ -113,7 +114,7 @@ function CalStrip({ selectedDate, onSelect, todos, exams, onOpenCalendar }: {
         {/* Calendar icon to open full picker */}
         <TouchableOpacity onPress={onOpenCalendar}
           style={{ width: 48, height: 68, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: t.card, borderWidth: 1, borderColor: t.border2 }}>
-          <Feather name="calendar" size={18} color={t.accent} />
+          <Calendar size={18} color={t.accent} />
           <Txt variant="mono" size={8} color="accent" style={{ textTransform: 'uppercase', letterSpacing: 0.3, marginTop: 4 }}>Any</Txt>
         </TouchableOpacity>
 
@@ -148,11 +149,11 @@ function CalStrip({ selectedDate, onSelect, todos, exams, onOpenCalendar }: {
         if (sel < strip0 || sel > strip20) {
           return (
             <TouchableOpacity onPress={onOpenCalendar} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, marginTop: 6 }}>
-              <Feather name="calendar" size={12} color={t.accent} />
+              <Calendar size={12} color={t.accent} />
               <Txt variant="mono" size={10} color="accent">
                 Selected: {sel.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
               </Txt>
-              <Feather name="edit-2" size={10} color={t.accent} />
+              <Edit2 size={10} color={t.accent} />
             </TouchableOpacity>
           );
         }
@@ -316,7 +317,7 @@ export default function ScheduleScreen() {
         )}
 
         {upcoming.length === 0 && completed.length === 0 && upcomingExams.length === 0 && (
-          <EmptyState icon="📅" title="Nothing scheduled" subtitle="Tap + to add a deadline or exam." />
+          <EmptyState icon={Calendar} title="Nothing scheduled" subtitle="Tap + to add a deadline or exam." />
         )}
 
       </ScrollView>
@@ -387,7 +388,7 @@ export default function ScheduleScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
                 borderWidth: 1.5, borderColor: newCourseId === c.id ? c.color : t.border2,
                 backgroundColor: newCourseId === c.id ? c.color + '22' : t.bg2 }}>
-              <Txt size={14}>{c.icon}</Txt>
+              <DynamicIcon name={c.icon} size={14} color={newCourseId === c.id ? c.color : t.text3} />
               <Txt variant="body" size={13} style={{ color: newCourseId === c.id ? c.color : t.text2 }}>{c.name}</Txt>
             </TouchableOpacity>
           ))}

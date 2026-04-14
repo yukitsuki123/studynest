@@ -1,7 +1,7 @@
-export type ThemeName = 'oxford' | 'night' | 'garden' | 'space' | 'cozy' | 'slate' | 'rose' | 'forest' | 'dusk';
+export type ThemeName = 'oxford' | 'night' | 'garden' | 'space' | 'cozy' | 'slate' | 'rose' | 'forest' | 'dusk' | 'nebula';
 export type FontFamily = 'lora' | 'crimson' | 'spectral' | 'merriweather' | 'eb_garamond' | 'cormorant';
 export type Priority = 'low' | 'medium' | 'high';
-export type FileType = 'pdf' | 'docx' | 'pptx' | 'note' | 'other';
+export type FileType = 'pdf' | 'docx' | 'pptx' | 'note' | 'image' | 'other';
 export type Language = 'en' | 'ar';
 
 export interface UserProfile {
@@ -11,8 +11,13 @@ export interface UserProfile {
   university?: string;
   major?: string;
   year?: string;
+  studentId?: string;
+  phone?: string;
+  birthDate?: string;
   avatarEmoji: string;
   avatarBg: string;
+  avatarUri?: string;
+  achievements?: { id: string; title: string; date: number; icon: string }[];
   idCardVisible: boolean;
 }
 
@@ -129,4 +134,41 @@ export interface ThemeColors {
   border2: string;
   red: string;
   blue: string;
+}
+
+export interface StickyNote {
+  id: string;
+  content: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface DailyIntention {
+  id: string;
+  date: string; // YYYY-MM-DD
+  intention: string;
+  mood: 'great' | 'good' | 'okay' | 'tired' | 'stressed';
+  createdAt: number;
+}
+
+export interface GratitudeEntry {
+  id: string;
+  courseId: string;
+  content: string;
+  createdAt: number;
+}
+
+export interface StudyStreak {
+  lastDate: string; // YYYY-MM-DD
+  currentStreak: number;
+  longestStreak: number;
+}
+
+export interface TrashItem {
+  id: string;
+  type: 'course' | 'note' | 'todo' | 'file' | 'studySet' | 'link' | 'bookmark' | 'grade' | 'exam' | 'sticky' | 'gratitude';
+  title: string;
+  data: string; // JSON serialized
+  deletedAt: number;
 }

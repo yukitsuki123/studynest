@@ -44,12 +44,15 @@ const FONT_SETS: Record<string, Record<string, string>> = {
 
 export function Txt({ variant = 'body', color = 'primary', size, style, ...props }: ThemedTextProps) {
   const t = useTheme();
-  const { fontFamily } = useSettings();
+  const { fontFamily, fontSizeMultiplier } = useSettings();
   const fonts = FONT_SETS[fontFamily] ?? FONT_SETS.lora;
   const colorMap = { primary:t.text, secondary:t.text2, tertiary:t.text3, accent:t.accent, accent2:t.accent2, accent3:t.accent3 };
+  const baseSize = size ?? 15;
+  const scaledSize = Math.round(baseSize * (fontSizeMultiplier || 1.0));
+  
   return (
     <RNText
-      style={[{ fontFamily: fonts[variant] ?? fonts.body, color: colorMap[color], fontSize: size ?? 15 }, style]}
+      style={[{ fontFamily: fonts[variant] ?? fonts.body, color: colorMap[color], fontSize: scaledSize }, style]}
       {...props}
     />
   );

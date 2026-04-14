@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TextInput, TextInputProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { Feather } from '@expo/vector-icons';
+import { Search } from 'lucide-react-native';
 
 interface SearchBarProps extends TextInputProps {
   value: string;
@@ -12,7 +12,7 @@ export function SearchBar({ value, onChangeText, ...props }: SearchBarProps) {
   const t = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: t.card, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginHorizontal: 20, marginBottom: 14 }}>
-      <Feather name="search" size={16} color={t.text3} />
+      <Search size={16} color={t.text3} />
       <TextInput
         value={value}
         onChangeText={onChangeText}

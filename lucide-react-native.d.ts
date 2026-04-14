@@ -1,0 +1,106 @@
+declare module 'lucide-react-native' {
+  import { LucideIcon } from 'lucide-react-native';
+  import { SvgProps } from 'react-native-svg';
+
+  export interface IconProps extends SvgProps {
+    size?: string | number;
+    color?: string;
+    strokeWidth?: string | number;
+  }
+
+  export type Icon = LucideIcon;
+
+  // Manual export of common icons used in the app if needed, 
+  // but a general declaration is usually enough to stop the errors.
+  export const ChevronLeft: Icon;
+  export const ChevronRight: Icon;
+  export const Eye: Icon;
+  export const Edit2: Icon;
+  export const Share2: Icon;
+  export const Trash2: Icon;
+  export const FileText: Icon;
+  export const File: Icon;
+  export const X: Icon;
+  export const Home: Icon;
+  export const BookOpen: Icon;
+  export const Calendar: Icon;
+  export const Hash: Icon;
+  export const Phone: Icon;
+  export const Gift: Icon;
+  export const Image: Icon;
+  export const Plus: Icon;
+  export const CheckCircle: Icon;
+  export const Upload: Icon;
+  export const Download: Icon;
+  export const AlertTriangle: Icon;
+  export const CheckSquare: Icon;
+  export const BarChart2: Icon;
+  export const Target: Icon;
+  export const Settings: Icon;
+  export const User: Icon;
+  export const Layout: Icon;
+  export const Activity: Icon;
+  export const Info: Icon;
+  export const Database: Icon;
+  export const Sliders: Icon;
+  export const Bell: Icon;
+  export const Clock: Icon;
+  export const Search: Icon;
+  export const Check: Icon;
+  export const Book: Icon;
+  export const MoreVertical: Icon;
+  export const Link2: Icon;
+  export const ExternalLink: Icon;
+  export const ArrowRight: Icon;
+  export const ArrowLeft: Icon;
+  export const Link: Icon;
+  export const Zap: Icon;
+  export const Package: Icon;
+  export const RefreshCw: Icon;
+  export const Folder: Icon;
+  export const Monitor: Icon;
+  export const Edit3: Icon;
+  export const Pause: Icon;
+  export const Play: Icon;
+  export const Square: Icon;
+  export const Award: Icon;
+  export const Share: Icon;
+  export const AlertCircle: Icon;
+  export const Camera: Icon;
+  export const ChevronUp: Icon;
+  export const ChevronDown: Icon;
+  export const FolderOpen: Icon;
+  export const CheckCircle2: Icon;
+  export const Smile: Icon;
+  export const Bookmark: Icon;
+  export const Layers: Icon;
+  export const HardDrive: Icon;
+  export const Lock: Icon;
+  export const Palette: Icon;
+  export const LayoutDashboard: Icon;
+  export const Languages: Icon;
+  export const ShieldCheck: Icon;
+  export const CreditCard: Icon;
+  export const Globe: Icon;
+  export const Moon: Icon;
+  export const Sunset: Icon;
+  export const Type: Icon;
+  export const Move: Icon;
+  export const Sun: Icon;
+  export const PenTool: Icon;
+  export const Thermometer: Icon;
+  export const BarChart: Icon;
+  export const Feather: Icon;
+  export const Radio: Icon;
+  export const Box: Icon;
+  export const MapPin: Icon;
+  export const Hammer: Icon;
+  export const Edit: Icon;
+  export const Briefcase: Icon;
+  export const FolderPlus: Icon;
+  export const Archive: Icon;
+  export const Watch: Icon;
+  export const PieChart: Icon;
+  export const Music: Icon;
+  export const Key: Icon;
+}

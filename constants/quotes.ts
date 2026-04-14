@@ -39,6 +39,7 @@ export const QUOTES = [
   { text: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
   { text: 'Do not wait to strike until the iron is hot, but make it hot by striking.', author: 'William Butler Yeats' },
   { text: 'Learning never exhausts the mind.', author: 'Leonardo da Vinci' },
+  { text: 'Education is the key to unlocking the world, a passport to freedom.', author: 'Oprah Winfrey' },
   { text: 'The highest activity a human being can attain is learning for understanding.', author: 'Baruch Spinoza' },
   { text: 'A mind stretched by a new idea can never go back to its original dimensions.', author: 'Oliver Wendell Holmes' },
 ];
